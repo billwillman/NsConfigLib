@@ -39,6 +39,14 @@ namespace NsLib.Config {
         internal abstract KEY ReadKey();
         internal abstract bool WriteKey(KEY key);
 
+        internal bool StreamSeek()
+        {
+            if (stream == null)
+                return false;
+            stream.Seek (dataOffset, SeekOrigin.Begin);
+            return true;
+        }
+
         // 使用工具对继承的类进行反射，然后生成这部分代码，
         // 不使用反射来做（为了性能）
         // 默认情况使用反射来处理，后面类继承这个方法，工具生成这个代码

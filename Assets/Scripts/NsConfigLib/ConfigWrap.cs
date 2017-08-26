@@ -27,22 +27,107 @@ namespace NsLib.Config {
             V config;
             if (!maps.TryGetValue(key, out config) || config == null)
                 return null;
+            if (config.IsReaded)
+                return config;
+            if (!config.StreamSeek ())
+                return null;
+            
             bool ret = config.ReadValue();
             if (!ret)
                 return null;
             return config;
         }
 
-        private static bool TryGetValue<K, V>(Dictionary<K, V> maps, K key, out V value) where V : ConfigBase<K> {
+        private static List<V> ReadItem<K, V>(Dictionary<K, List<V>> maps, K key) where V : ConfigBase<K> {
+            if (maps == null || maps.Count <= 0)
+                return null;
+            List<V> vs;
+            if (!maps.TryGetValue(key, out vs) || vs == null || vs.Count <= 0)
+                return null;
+            V config = vs [0];
+            if (config == null)
+                return null;
+            
+            if (config.IsReaded)
+                return vs;
+            if (!config.StreamSeek ())
+                return null;
+
+            bool ret = config.ReadValue ();
+            if (!ret)
+                return null;
+            
+            for (int i = 1; i < vs.Count; ++i) {
+                config = vs [i];
+                ret = config.ReadValue ();
+                if (!ret)
+                    return null;
+            }
+            return vs;
+        }
+
+        public static bool ConfigTryGetValue<K, V>(this Dictionary<K, V> maps, K key, out V value) where V : ConfigBase<K> {
             value = default(V);
             if (maps == null || maps.Count <= 0)
                 return false;
             value = ReadItem(maps, key);
+            return value != null;
+        }
+
+        public static bool ConfigTryGetValue<K, V>(this Dictionary<K, List<V>> maps, K key, out List<V> values) where V : ConfigBase<K>
+        {
+            values = null;
+            if (maps == null || maps.Count <= 0)
+                return false;
+            values = ReadItem (maps, key);
+            return values != null;
+        }
+
+        private bool StartLoadAllCortine<K, V>(Dictionary<K, V> maps, UnityEngine.MonoBehaviour parent) where V : ConfigBase<K>
+        {
+            if (maps == null || maps.Count <= 0)
+                return false;
+            if (parent != null) {
+                parent.StartCoroutine(StartLoadCortine<K, V>(maps));
+            } else {
+                var iter = maps.GetEnumerator();
+                while (iter.MoveNext()) {
+                    V config = iter.Current.Value;
+                    Stream stream = config.stream;
+                    stream.Seek(config.dataOffset, SeekOrigin.Begin);
+                    config.ReadValue();
+                }
+                iter.Dispose();
+            }
+
             return true;
         }
 
+        private static UnityEngine.WaitForEndOfFrame m_EndFrame = null;
+        private static void InitEndFrame()
+        {
+            if (m_EndFrame == null)
+                m_EndFrame = new UnityEngine.WaitForEndOfFrame ();
+        }
+        private IEnumerator StartLoadCortine<K, V>(Dictionary<K, V> maps) where V : ConfigBase<K>
+        {
+            if (maps == null || maps.Count <= 0)
+                yield break;
+
+            var iter = maps.GetEnumerator();
+            while (iter.MoveNext()) {
+                V config = iter.Current.Value;
+                Stream stream = config.stream;
+                stream.Seek(config.dataOffset, SeekOrigin.Begin);
+                config.ReadValue();
+                InitEndFrame ();
+                yield return m_EndFrame;
+            }
+            iter.Dispose();
+        }
+
         // 首次读取
-        public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false) where V : ConfigBase<K> {
+        public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false, UnityEngine.MonoBehaviour loadAllCortine = null) where V : ConfigBase<K> {
             if (stream == null)
                 return null;
             ConfigFileHeader header = new ConfigFileHeader();
@@ -68,13 +153,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps != null && maps.Count > 0) {
-                var iter = maps.GetEnumerator();
-                while (iter.MoveNext()) {
-                    V config = iter.Current.Value;
-                    stream.Seek(config.dataOffset, SeekOrigin.Begin);
-                    config.ReadValue();
-                }
-                iter.Dispose();
+                StartLoadAllCortine<K, V> (maps, loadAllCortine);
             }
 
             return maps;
