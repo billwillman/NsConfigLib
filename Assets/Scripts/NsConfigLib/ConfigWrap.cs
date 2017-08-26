@@ -83,12 +83,12 @@ namespace NsLib.Config {
             return values != null;
         }
 
-        private bool StartLoadAllCortine<K, V>(Dictionary<K, V> maps, UnityEngine.MonoBehaviour parent) where V : ConfigBase<K>
+        private static UnityEngine.Coroutine StartLoadAllCortine<K, V>(Dictionary<K, V> maps, UnityEngine.MonoBehaviour parent) where V : ConfigBase<K>
         {
             if (maps == null || maps.Count <= 0)
-                return false;
+                return null;
             if (parent != null) {
-                parent.StartCoroutine(StartLoadCortine<K, V>(maps));
+                return parent.StartCoroutine(StartLoadCortine<K, V>(maps));
             } else {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
@@ -100,7 +100,32 @@ namespace NsLib.Config {
                 iter.Dispose();
             }
 
-            return true;
+            return null;
+        }
+
+        private  static UnityEngine.Coroutine StartLoadAllCortine<K, V>(Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour parent) where V : ConfigBase<K>
+        {
+            if (maps == null || maps.Count <= 0)
+                return null;
+
+            if (parent != null) {
+                return parent.StartCoroutine (StartLoadCortine<K, V> (maps));
+            } else {
+                var iter = maps.GetEnumerator();
+                while (iter.MoveNext()) {
+                    List<V> vs = iter.Current.Value;
+                    V v = vs[0];
+                    Stream stream = v.stream;
+                    stream.Seek(v.dataOffset, SeekOrigin.Begin);
+                    for (int i = 0; i < vs.Count; ++i) {
+                        v = vs[i];
+                        v.ReadValue();
+                    }
+                }
+                iter.Dispose();
+            }
+
+            return null;
         }
 
         private static UnityEngine.WaitForEndOfFrame m_EndFrame = null;
@@ -109,7 +134,7 @@ namespace NsLib.Config {
             if (m_EndFrame == null)
                 m_EndFrame = new UnityEngine.WaitForEndOfFrame ();
         }
-        private IEnumerator StartLoadCortine<K, V>(Dictionary<K, V> maps) where V : ConfigBase<K>
+        private static IEnumerator StartLoadCortine<K, V>(Dictionary<K, V> maps) where V : ConfigBase<K>
         {
             if (maps == null || maps.Count <= 0)
                 yield break;
@@ -120,6 +145,26 @@ namespace NsLib.Config {
                 Stream stream = config.stream;
                 stream.Seek(config.dataOffset, SeekOrigin.Begin);
                 config.ReadValue();
+                InitEndFrame ();
+                yield return m_EndFrame;
+            }
+            iter.Dispose();
+        }
+
+        private static IEnumerator StartLoadCortine<K, V>(Dictionary<K, List<V>> maps) where V : ConfigBase<K>
+        {
+            if (maps == null || maps.Count <= 0)
+                yield break;
+            var iter = maps.GetEnumerator();
+            while (iter.MoveNext()) {
+                List<V> vs = iter.Current.Value;
+                V v = vs[0];
+                Stream stream = v.stream;
+                stream.Seek(v.dataOffset, SeekOrigin.Begin);
+                for (int i = 0; i < vs.Count; ++i) {
+                    v = vs[i];
+                    v.ReadValue();
+                }
                 InitEndFrame ();
                 yield return m_EndFrame;
             }
@@ -159,7 +204,9 @@ namespace NsLib.Config {
             return maps;
         }
 
-        public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false) where V : ConfigBase<K> {
+        public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false, 
+            UnityEngine.MonoBehaviour loadAllCortine = null) where V : ConfigBase<K> {
+
             if (stream == null)
                 return null;
             ConfigFileHeader header = new ConfigFileHeader();
@@ -194,17 +241,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps != null && maps.Count > 0) {
-                var iter = maps.GetEnumerator();
-                while (iter.MoveNext()) {
-                    List<V> vs = iter.Current.Value;
-                    V v = vs[0];
-                    stream.Seek(v.dataOffset, SeekOrigin.Begin);
-                    for (int i = 0; i < vs.Count; ++i) {
-                        v = vs[i];
-                        v.ReadValue();
-                    }
-                }
-                iter.Dispose();
+                StartLoadAllCortine<K, V> (maps, loadAllCortine);
             }
 
 

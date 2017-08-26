@@ -51,6 +51,11 @@ public class TestListConfig: MonoBehaviour {
                 MemoryStream stream = new MemoryStream (m_Binary.bytes);
                 var dict = ConfigWrap.ToObjectList<string, TaskTalkCfg> (stream, true);
             }
+
+            if (GUI.Button (new Rect (300, 150, 100, 50), "二进制全部读取携程")) {
+                MemoryStream stream = new MemoryStream (m_Binary.bytes);
+                var dict = ConfigWrap.ToObjectList<string, TaskTalkCfg> (stream, true, this);
+            }
         }
     }
 
