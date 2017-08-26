@@ -19,7 +19,7 @@ namespace NsLib.Config {
                         System.Reflection.BindingFlags.GetProperty);
                 if (props == null || props.Length <= 0)
                     return false;
-                List<System.Reflection.PropertyInfo> m_Props = new List<System.Reflection.PropertyInfo>(props);
+                m_Props = new List<System.Reflection.PropertyInfo>(props);
                 m_Props.Sort(ConfigIdAttribute.OnSort);
                
             }
