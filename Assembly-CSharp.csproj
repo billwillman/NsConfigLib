@@ -66,7 +66,6 @@
      <Compile Include="Assets\Scripts\TestListConfig.cs" />
      <Compile Include="Assets\Scripts\Util\FilePathMgr.cs" />
      <Compile Include="Assets\Scripts\Util\Singleton.cs" />
-     <None Include="Assets\Resources\TaskTalkCfg_Binary.txt" />
      <None Include="Assets\Resources\TaskTalkCfg.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
