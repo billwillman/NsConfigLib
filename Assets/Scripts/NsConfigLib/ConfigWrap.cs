@@ -251,8 +251,10 @@ namespace NsLib.Config {
         internal static bool ToStream(Stream stream, System.Collections.IDictionary values) {
             if (stream == null || values == null || values.Count <= 0)
                 return false;
+
             ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
             header.SaveToStream(stream);
+
             var iter = values.GetEnumerator();
             bool isListMode = false;
             while (iter.MoveNext()) {

@@ -17,6 +17,7 @@ public class TestListConfig: MonoBehaviour {
         string str = m_Text.text;
         m_Map = JsonMapper.ToObject<Dictionary<string, List<TaskTalkCfg>>>(str);
 
+        /*
         string fileName = string.Format ("Assets/Resources/{0}.bytes", _cTaskListFileName);
         FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
         try {
@@ -25,6 +26,7 @@ public class TestListConfig: MonoBehaviour {
             stream.Close();
             stream.Dispose();
         }
+        */
 
         m_Binary = Resources.Load<TextAsset> (_cTaskListFileName);
     }
