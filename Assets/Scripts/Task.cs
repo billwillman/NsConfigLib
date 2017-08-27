@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NsLib.Config;
 
+[ConfigConvert("TaskTalkCfg", true)]
 public class TaskTalkCfg: ConfigStringKey {
     [ConfigId(0)]
     public int id {

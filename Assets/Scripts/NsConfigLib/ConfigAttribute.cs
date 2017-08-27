@@ -41,7 +41,7 @@ namespace NsLib.Config {
 
         public uint ID {
             get;
-            set;
+            private set;
         }
     }
 }
