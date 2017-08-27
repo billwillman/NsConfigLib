@@ -5,11 +5,30 @@ using System.Collections.Generic;
 using Utils;
 
 namespace NsLib.Config {
-    public abstract class ConfigBase<KEY> {
+
+    internal interface IConfigBase {
+        bool StreamSeek();
+
+        Stream stream {
+            get;
+            set;
+        }
+
+        long dataOffset {
+            get;
+            set;
+        }
+
+        bool WriteValue();
+
+        bool WriteKey(System.Object key);
+    }
+
+    public abstract class ConfigBase<KEY>: IConfigBase {
 
         private static List<System.Reflection.PropertyInfo> m_Props = null;
 
-        internal Stream stream {
+        public Stream stream {
             get;
             set;
         }
@@ -24,14 +43,27 @@ namespace NsLib.Config {
                         System.Reflection.BindingFlags.GetProperty);
                 if (props == null || props.Length <= 0)
                     return false;
-                m_Props = new List<System.Reflection.PropertyInfo>(props);
+                m_Props = new List<System.Reflection.PropertyInfo>();
+                for (int i = 0; i < props.Length; ++i) {
+                    var prop = props[i];
+                    object[] attrs = prop.GetCustomAttributes(false);
+                    if (attrs != null && attrs.Length > 0) {
+                        for (int j = 0; j < attrs.Length; ++j) {
+                            ConfigIdAttribute attr = attrs[j] as ConfigIdAttribute;
+                            if (attr != null) {
+                                m_Props.Add(prop);
+                                break;
+                            }
+                        }
+                    }
+                }
                 m_Props.Sort(ConfigIdAttribute.OnSort);
                
             }
             return m_Props != null && m_Props.Count > 0;
         }
 
-        internal long dataOffset {
+        public long dataOffset {
             get;
             set;
         }
@@ -39,7 +71,7 @@ namespace NsLib.Config {
         internal abstract KEY ReadKey();
         internal abstract bool WriteKey(KEY key);
 
-        internal bool StreamSeek()
+        public bool StreamSeek()
         {
             if (stream == null)
                 return false;
@@ -64,7 +96,7 @@ namespace NsLib.Config {
                 return false;
             
             for (int i = 0; i < m_Props.Count; ++i) {
-                System.Reflection.PropertyInfo prop = m_Props[i];
+                System.Reflection.PropertyInfo prop = m_Props[i]; 
                 FilePathMgr.Instance.ReadProperty(stream, prop, this);
             }
 
@@ -78,7 +110,7 @@ namespace NsLib.Config {
         ///   </summary> 
         ///   <param name="stream">写入的流</param>
         /// <returns>是否写入</returns>
-        internal bool WriteValue() {
+        public bool WriteValue() {
             if (stream == null)
                 return false;
 
@@ -87,14 +119,16 @@ namespace NsLib.Config {
 
             for (int i = 0; i < m_Props.Count; ++i) {
                 System.Reflection.PropertyInfo prop = m_Props[i];
-                object value = prop.GetValue(this, null);
+                object value = prop.GetValue(this, null); 
                 FilePathMgr.Instance.WriteProperty(stream, prop, value);
             }
 
             return true;
         }
 
-        
+        public bool WriteKey(System.Object key) {
+            return FilePathMgr.Instance.WriteObject(stream, key);
+        }
 
         // 是否已经读取
         internal bool IsReaded {

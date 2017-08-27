@@ -299,7 +299,7 @@ namespace LitJson {
             return op;
         }
 
-        private static object ReadValue(Type inst_type, JsonReader reader) {
+        public static object ReadValue(Type inst_type, JsonReader reader) {
             reader.Read();
 
             if (reader.Token == JsonToken.ArrayEnd)

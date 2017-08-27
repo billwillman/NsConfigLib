@@ -235,26 +235,59 @@ namespace Utils
             if (prop == null || stream == null || parent == null)
                 return false;
             System.Object value = null;
-            if (prop.PropertyType == typeof(int) ||
-                    prop.PropertyType == typeof(uint)) {
+            System.Type propType = prop.PropertyType;
+            if (propType == typeof(int) ||
+                    propType == typeof(uint)) {
 
                 value = ReadInt(stream);
-            } else if (prop.PropertyType == typeof(short) ||
-                      prop.PropertyType == typeof(ushort)) {
+            } else if (propType == typeof(long) || propType == typeof(ulong)) {
+                value = ReadLong(stream);
+            } 
+            else if (propType == typeof(short) ||
+                      propType == typeof(ushort)) {
                 value = ReadShort(stream);
-            } else if (prop.PropertyType == typeof(float)) {
+            } else if (propType == typeof(float)) {
                 value = ReadSingle(stream);
-            } else if (prop.PropertyType == typeof(double)) {
+            } else if (propType == typeof(double)) {
                 value = ReadDouble(stream);
-            } else if (prop.PropertyType == typeof(string)) {
+            } else if (propType == typeof(string)) {
                 value = ReadString(stream);
-            } else if (prop.PropertyType == typeof(byte)) {
+            } else if (propType == typeof(byte)) {
                 value = (byte)stream.ReadByte();
             } else {
-                throw new Exception("不支持此转换");
+                throw new Exception(string.Format("not support convert: {0}", propType.Name));
             }
 
             prop.SetValue(parent, value, null);
+
+            return true;
+        }
+
+        public bool WriteObject(Stream stream, System.Object value) {
+            if (stream == null || value == null)
+                return false;
+            System.Type type = value.GetType();
+            if (type == typeof(int) ||
+                    type == typeof(uint)) {
+
+                WriteInt(stream, (int)value);
+            } else if (type == typeof(long) || type == typeof(ulong)) {
+                WriteLong(stream, (long)value);
+            } 
+            else if (type == typeof(short) ||
+                      type == typeof(ushort)) {
+                WriteShort(stream, (short)value);
+            } else if (type == typeof(float)) {
+                WriteSingle(stream, (float)value);
+            } else if (type == typeof(double)) {
+                WriteDouble(stream, (double)value);
+            } else if (type == typeof(string)) {
+                WriteString(stream, (string)value);
+            } else if (type == typeof(byte)) {
+                stream.WriteByte((byte)value);
+            } else {
+                throw new Exception(string.Format("not support convert: {0}", type.Name));
+            }
 
             return true;
         }
@@ -263,26 +296,7 @@ namespace Utils
             if (prop == null || stream == null)
                 return false;
 
-            if (prop.PropertyType == typeof(int) ||
-                    prop.PropertyType == typeof(uint)) {
-
-                WriteInt(stream, (int)value);
-            } else if (prop.PropertyType == typeof(short) ||
-                      prop.PropertyType == typeof(ushort)) {
-                WriteShort(stream, (short)value);
-            } else if (prop.PropertyType == typeof(float)) {
-                WriteSingle(stream, (float)value);
-            } else if (prop.PropertyType == typeof(double)) {
-                WriteDouble(stream, (double)value);
-            } else if (prop.PropertyType == typeof(string)) {
-                WriteString(stream, (string)value);
-            } else if (prop.PropertyType == typeof(byte)) {
-                stream.WriteByte((byte)value);
-            } else {
-                throw new Exception("不支持此转换");
-            }
-
-            return true;
+            return WriteObject(stream, value);
         }
 
 

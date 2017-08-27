@@ -248,6 +248,70 @@ namespace NsLib.Config {
             return maps;
         }
 
+        internal static bool ToStream(Stream stream, System.Collections.IDictionary values) {
+            if (stream == null || values == null || values.Count <= 0)
+                return false;
+            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
+            header.SaveToStream(stream);
+            var iter = values.GetEnumerator();
+            bool isListMode = false;
+            while (iter.MoveNext()) {
+                IList vs = iter.Value as IList;
+                if (vs != null) {
+                    // 说明是listMode
+                    isListMode = true;
+                    long dataOffset = stream.Position;
+                    for (int i = 0; i < vs.Count; ++i) {
+                        IConfigBase v = vs[i] as IConfigBase;
+                        v.stream = stream;
+                        v.dataOffset = dataOffset;
+                        v.WriteValue();
+                    }
+                } else {
+                    isListMode = false;
+                    IConfigBase v = iter.Value as IConfigBase;
+                    v.stream = stream;
+                    v.dataOffset = stream.Position;
+                    v.WriteValue();
+                }
+            }
+
+
+            long indexOffset = stream.Position;
+            FilePathMgr.Instance.WriteBool(stream, isListMode);
+
+            if (isListMode) {
+                iter = values.GetEnumerator();
+                while (iter.MoveNext()) {
+                    System.Object key = iter.Key;
+                    IList vs = iter.Value as IList;
+                    if (vs != null) {
+                        IConfigBase v = vs[0] as IConfigBase;
+                        v.WriteKey(key);
+                        // 偏移
+                        FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
+                        // 数量
+                        FilePathMgr.Instance.WriteInt(stream, vs.Count);
+                    }
+                }
+            } else {
+                iter = values.GetEnumerator();
+                while (iter.MoveNext()) {
+                    System.Object key = iter.Key;
+                    IConfigBase v = iter.Value as IConfigBase;
+                    v.WriteKey(key);
+                    FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
+                }
+            }
+
+            // 重写Header
+            header.indexOffset = indexOffset;
+            header.SeekFileToHeader(stream);
+            header.SaveToStream(stream);
+
+            return true;
+        }
+
         public static bool ToStream<K, V>(Stream stream, Dictionary<K, List<V>> values) where V : ConfigBase<K> {
             if (stream == null || values == null || values.Count <= 0)
                 return false;

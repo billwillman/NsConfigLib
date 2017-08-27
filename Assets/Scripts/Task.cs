@@ -4,7 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using NsLib.Config;
 
-[ConfigConvert("TaskTalkCfg", true, "TaskTalkCfg_Binary")]
+[ConfigConvert("TaskTalkCfg", 
+    typeof(Dictionary<string, List<TaskTalkCfg>>),
+    "TaskTalkCfg_Binary")]
 public class TaskTalkCfg : ConfigStringKey {
     [ConfigId(0)]
     public int id {

@@ -47,7 +47,22 @@ namespace NsLib.Config
             if (string.IsNullOrEmpty(configName))
                 return;
             // 转换为二进制文件
-            ConfigConvertManager.ConvertToBinaryFile(configName);
+            FileStream srcStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            try {
+                if (srcStream.Length <= 0)
+                    return;
+                byte[] buffer = new byte[srcStream.Length];
+                if (buffer == null || buffer.Length <= 0)
+                    return;
+                srcStream.Read(buffer, 0, buffer.Length);
+                string json = System.Text.Encoding.UTF8.GetString(buffer);
+                if (string.IsNullOrEmpty(json))
+                    return;
+                ConfigConvertManager.ConvertToBinaryFile(fileName, configName, json);
+            } finally {
+                srcStream.Close();
+                srcStream.Dispose();
+            }
         }
 
         [MenuItem("Tools/测试配合转换表生成")]

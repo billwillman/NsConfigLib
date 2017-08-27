@@ -48,6 +48,7 @@ namespace NsLib.Config {
                 return false;
             try {
                 flag = (ushort)FilePathMgr.Instance.ReadShort(stream);
+
                 version = (ushort)FilePathMgr.Instance.ReadShort(stream);
                 Count = (uint)FilePathMgr.Instance.ReadInt(stream);
                 indexOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -67,17 +68,11 @@ namespace NsLib.Config {
         public bool SaveToStream(Stream stream) {
             if (stream == null)
                 return false;
-            bool ret = FilePathMgr.Instance.WriteShort(stream, (short)_Flag);
-            if (!ret)
-                return ret;
-            ret = FilePathMgr.Instance.WriteShort(stream, (short)_CurrentVersion);
-            if (!ret)
-                return ret;
-            ret = FilePathMgr.Instance.WriteInt(stream, (int)Count);
-            if (!ret)
-                return ret;
-            ret = FilePathMgr.Instance.WriteLong(stream, indexOffset);
-            return ret;
+            FilePathMgr.Instance.WriteShort(stream, (short)flag);
+            FilePathMgr.Instance.WriteShort(stream, (short)version);
+            FilePathMgr.Instance.WriteInt(stream, (int)Count);
+            FilePathMgr.Instance.WriteLong(stream, indexOffset);
+            return true;
         }
 
         private static readonly ushort _CurrentVersion = 1;

@@ -5,11 +5,12 @@ namespace NsLib.Config
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ConfigConvertAttribute: Attribute
     {
-        public ConfigConvertAttribute(string configName, bool isListMode, string convertName = "")
+        public ConfigConvertAttribute(string configName, 
+            System.Type mapType, string convertName = "")
         {
             ConfigName = configName;
-            IsListMode = isListMode;
             ConvertName = convertName;
+            MapType = mapType;
         }
 
         public string ConfigName {
@@ -17,12 +18,12 @@ namespace NsLib.Config
             private set;
         }
 
-        public bool IsListMode {
+        public string ConvertName {
             get;
             private set;
         }
 
-        public string ConvertName {
+        public System.Type MapType {
             get;
             private set;
         }
@@ -32,18 +33,12 @@ namespace NsLib.Config
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class ConfigConvertField: Attribute
     {
-        public ConfigConvertField(string configName, string convertName = "")
+        public ConfigConvertField(string configName)
         {
             ConfigName = configName;
-            ConvertName = convertName;
         }
 
         public string ConfigName {
-            get;
-            private set;
-        }
-
-        public string ConvertName {
             get;
             private set;
         }

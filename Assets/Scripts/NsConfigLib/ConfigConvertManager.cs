@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using LitJson;
 
 namespace NsLib.Config {
     public static class ConfigConvertManager {
@@ -10,8 +12,8 @@ namespace NsLib.Config {
 
             public ConvertClassInfo(System.Type target, ConfigConvertAttribute attr) {
                 this.type = target;
-                this.isListMode = attr.IsListMode;
                 this.configName = attr.ConfigName;
+                this.DictionaryType = attr.MapType;
                 this.convertName = attr.ConvertName;
                 if (string.IsNullOrEmpty(convertName))
                     this.convertName = configName;
@@ -27,37 +29,49 @@ namespace NsLib.Config {
                     this.convertName = configName;
             }*/
 
-
-            public System.Type type {
-                get; set;
+            // 字典类型
+            public System.Type DictionaryType {
+                get;
+                private set;
             }
 
-            public bool isListMode {
+            public System.Type type {
                 get;
-                set;
+                private set;
             }
 
             public string configName {
                 get;
-                set;
+                private set;
             }
 
             public string convertName {
                 get;
-                set;
+                private set;
             }
         }
 
-        public static void ConvertToBinaryFile(string configName) {
-            ConvertClassInfo info = GetConvertClass(configName);
-            if (info == null)
+        // LitJson转换成自定义格式
+        public static void ConvertToBinaryFile(string fileName, string configName, string json) {
+
+            if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(json))
                 return;
 
-            
-            if (info.isListMode) {
-                // List模式
-            } else {
-                // 非List模式
+            ConvertClassInfo info = GetConvertClass(configName);
+            if (info == null || info.DictionaryType == null)
+                return;
+
+            System.Type dictType = info.DictionaryType;
+            System.Collections.IDictionary values = LitJsonHelper.ToTypeObject(json, info.DictionaryType) as System.Collections.IDictionary;
+            if (values == null)
+                return;
+            string newFileName = string.Format("{0}/{1}.txt", Path.GetDirectoryName(fileName), info.convertName);
+            FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.ReadWrite);
+            try {
+                ConfigWrap.ToStream(stream, values);
+            } finally {
+                stream.Close();
+                stream.Dispose();
             }
         }
 
@@ -73,10 +87,11 @@ namespace NsLib.Config {
 
         private static Dictionary<string, ConvertClassInfo> m_ConvertClassMap = new Dictionary<string, ConvertClassInfo>();
 
-        private static void BuildConfigConvertClass(System.Type t) {
+        private static bool BuildConfigConvertClass(System.Type t) {
             if (t == null)
-                return;
+                return false;
             // 先找标记了的类
+            bool ret = false;
             object[] attrs = t.GetCustomAttributes(false);
             if (attrs != null && attrs.Length > 0) {
                 for (int i = 0; i < attrs.Length; ++i) {
@@ -85,9 +100,12 @@ namespace NsLib.Config {
                         continue;
                     ConvertClassInfo info = new ConvertClassInfo(t, attr);
                     m_ConvertClassMap[attr.ConfigName] = info;
+                    ret = true;
                     break;
                 }
             }
+
+            return ret;
         }
 
         /*
@@ -128,32 +146,20 @@ namespace NsLib.Config {
                     if (!isFound)
                         continue;
 
-                    System.Type TKey = interfaces[0];
-                    System.Type TValue = interfaces[1];
-
-                    System.Type targetType;
-                    bool isListMode = TValue.IsSubclassOf(typeof(IList));
-                    if (isListMode) {
-                        System.Type[] listTypes = TValue.GetInterfaces();
-                        if (listTypes == null || listTypes.Length != 1)
-                            continue;
-                        targetType = listTypes[0];
-                    } else
-                        targetType = TValue;
-
-                    object[] attrs = field.GetCustomAttributes(false);
-                    if (attrs != null && attrs.Length > 0) {
+                    System.Object[] attrs = field.GetCustomAttributes(false);
+                    if (attrs != null) {
                         for (int j = 0; j < attrs.Length; ++j) {
                             ConfigConvertField attr = attrs[j] as ConfigConvertField;
-                            if (attr == null || string.IsNullOrEmpty(attr.ConfigName))
-                                continue;
-
-                            ConvertClassInfo info = new ConvertClassInfo(targetType, attr, isListMode);
-                            m_ConvertClassMap[attr.ConfigName] = info;
-
-                            break;
+                            if (attr != null) {
+                                ConvertClassInfo info;
+                                if (m_ConvertClassMap.TryGetValue(attr.ConfigName, out info)) {
+                                    info.DictionaryType = fieldType;
+                                }
+                                break;
+                            }
                         }
                     }
+
                 }
             }
         }*/
@@ -174,9 +180,10 @@ namespace NsLib.Config {
             
             for (int i = 0; i < types.Length; ++i) {
                 System.Type t = types[i];
-                BuildConfigConvertClass(t);
-                // 再找这个类里面的field字段是否有标记位
-                //BuildConfigConvertFields(t);
+                if (BuildConfigConvertClass(t)) {
+                    // 再找这个类里面的field字段是否有标记位
+                   // BuildConfigConvertFields(t);
+                }
             }
         }
     }
