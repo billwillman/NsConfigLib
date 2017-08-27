@@ -1,0 +1,20 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/NsConfigLib/Editor/ConfigAssetImporter.cs">
+    <Files>
+      <File FileName="Assets/Scripts/TestListConfig.cs" Line="44" Column="49" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigWrap.cs" Line="106" Column="66" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigBase.cs" Line="55" Column="1" />
+      <File FileName="Assets/Scripts/Util/FilePathMgr.cs" Line="247" Column="23" />
+      <File FileName="Assets/Resources/TaskTalkCfg.txt" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Task.cs" Line="6" Column="1" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigConvertAttribute.cs" Line="18" Column="10" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigAttribute.cs" Line="44" Column="14" />
+      <File FileName="Assets/Scripts/NsConfigLib/Editor/ConfigAssetImporter.cs" Line="32" Column="17" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
