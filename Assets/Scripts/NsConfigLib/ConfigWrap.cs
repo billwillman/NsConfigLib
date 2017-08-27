@@ -172,7 +172,8 @@ namespace NsLib.Config {
         }
 
         // 首次读取
-        public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false, UnityEngine.MonoBehaviour loadAllCortine = null) where V : ConfigBase<K> {
+        public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false, 
+            UnityEngine.MonoBehaviour loadAllCortine = null) where V : ConfigBase<K> {
             if (stream == null)
                 return null;
             ConfigFileHeader header = new ConfigFileHeader();

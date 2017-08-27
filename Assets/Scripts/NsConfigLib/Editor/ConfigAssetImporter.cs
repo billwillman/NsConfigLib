@@ -63,6 +63,8 @@ namespace NsLib.Config
                 srcStream.Close();
                 srcStream.Dispose();
             }
+
+            AssetDatabase.Refresh ();
         }
 
         [MenuItem("Tools/测试配合转换表生成")]
