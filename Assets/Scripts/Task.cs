@@ -4,11 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using NsLib.Config;
 
-[ConfigConvert("TaskTalkCfg", true)]
-public class TaskTalkCfg: ConfigStringKey {
+[ConfigConvert("TaskTalkCfg", true, "TaskTalkCfg_Binary")]
+public class TaskTalkCfg : ConfigStringKey {
     [ConfigId(0)]
     public int id {
-        get;set;
+        get; set;
     }
     [ConfigId(1)]
     public int stepId {

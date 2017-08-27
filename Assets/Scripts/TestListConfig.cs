@@ -59,6 +59,7 @@ public class TestListConfig: MonoBehaviour {
         }
     }
 
+   
     private Dictionary<string, List<TaskTalkCfg>> m_Map = null;
     private static readonly string _cTaskListFileName = "taskList";
 }

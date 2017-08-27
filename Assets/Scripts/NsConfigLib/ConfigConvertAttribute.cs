@@ -28,6 +28,7 @@ namespace NsLib.Config
         }
     }
 
+    /*
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class ConfigConvertField: Attribute
     {
@@ -46,6 +47,7 @@ namespace NsLib.Config
             get;
             private set;
         }
-    }
+    }*/
+
 }
 
