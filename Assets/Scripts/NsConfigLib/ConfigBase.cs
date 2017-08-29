@@ -2,7 +2,7 @@
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using Utils;
+using NsLib.Utils;
 
 namespace NsLib.Config {
 
@@ -25,8 +25,24 @@ namespace NsLib.Config {
     }
 
     public abstract class ConfigBase<KEY>: IConfigBase {
+        // private static List<System.Reflection.PropertyInfo> m_Props = null;
+        private static Dictionary<System.Type, List<System.Reflection.PropertyInfo>> m_PropsMap = new Dictionary<Type, List<System.Reflection.PropertyInfo>>();
 
-        private static List<System.Reflection.PropertyInfo> m_Props = null;
+        protected List<System.Reflection.PropertyInfo> Propertys {
+            get {
+                System.Type type = GetType();
+                List<System.Reflection.PropertyInfo> ret = null;
+                if (!m_PropsMap.TryGetValue(type, out ret))
+                    ret = null;
+                return ret;
+            }
+            set {
+                if (value != null && value.Count > 0) {
+                    System.Type type = GetType();
+                    m_PropsMap[type] = value;
+                }
+            }
+        }
 
         public Stream stream {
             get;
@@ -34,6 +50,7 @@ namespace NsLib.Config {
         }
         private bool InitPropertys() {
             // 一个类型值只读一次
+            var m_Props = Propertys;
             if (m_Props == null) {
                 System.Type type = GetType();
                 System.Reflection.PropertyInfo[] props =
@@ -58,7 +75,7 @@ namespace NsLib.Config {
                     }
                 }
                 m_Props.Sort(ConfigIdAttribute.OnSort);
-               
+                Propertys = m_Props;
             }
             return m_Props != null && m_Props.Count > 0;
         }
@@ -94,7 +111,8 @@ namespace NsLib.Config {
 
             if (!InitPropertys())
                 return false;
-            
+
+            var m_Props = this.Propertys;
             for (int i = 0; i < m_Props.Count; ++i) {
                 System.Reflection.PropertyInfo prop = m_Props[i]; 
                 FilePathMgr.Instance.ReadProperty(stream, prop, this);
@@ -117,6 +135,7 @@ namespace NsLib.Config {
             if (!InitPropertys())
                 return false;
 
+            var m_Props = this.Propertys;
             for (int i = 0; i < m_Props.Count; ++i) {
                 System.Reflection.PropertyInfo prop = m_Props[i];
                 object value = prop.GetValue(this, null); 
