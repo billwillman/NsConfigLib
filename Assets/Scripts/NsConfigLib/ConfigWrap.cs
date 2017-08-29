@@ -201,7 +201,7 @@ namespace NsLib.Config {
             bool isLoadAll = false,
             Action<Dictionary<K, V>> onOK = null) where V: ConfigBase<K>
         {
-            if (stream == null || maps == null || maps.Count <= 0) {
+            if (stream == null || maps == null) {
                 yield break;
             }
             maps.Clear ();
