@@ -28,7 +28,7 @@ namespace NsLib.Config {
         // 预加载用
         public static void PreloadWrap<K, V>(Dictionary<K, V> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
-            Action<Dictionary<K, V>> onEnd) where V : ConfigBase<K> {
+            Action<IDictionary> onEnd) where V : ConfigBase<K> {
             isJson = false;
             if (maps == null || asset == null || mono == null) {
                 if (onEnd != null)
@@ -64,7 +64,7 @@ namespace NsLib.Config {
 
         public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
-            Action<Dictionary<K, List<V>>> onEnd) where V : ConfigBase<K> {
+            Action<IDictionary> onEnd) where V : ConfigBase<K> {
             isJson = false;
             if (maps == null || asset == null || mono == null) {
                 if (onEnd != null)
@@ -121,11 +121,29 @@ namespace NsLib.Config {
         
     }
 
+    public interface IConfigVoMap<K> {
+        bool ContiansKey(K key);
+        bool IsJson {
+            get;
+        }
+
+        bool LoadFromTextAsset(TextAsset asset, bool isLoadAll = false);
+
+        // 预加载
+        bool Preload(TextAsset asset, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd);
+    }
+
     
     // 两个配置
-    public class ConfigVoMap<K, V> where V: ConfigBase<K> {
+    public class ConfigVoMap<K, V>: IConfigVoMap<K> where V: ConfigBase<K> {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
+
+        public bool IsJson {
+            get {
+                return m_IsJson;
+            }
+        }
 
         public bool ContiansKey(K key) {
             if (m_Map == null)
@@ -170,12 +188,34 @@ namespace NsLib.Config {
                 return ret;
             }
         } 
+
+        public bool Preload(TextAsset asset, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd) {
+            if (asset == null || mono == null)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K, V>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.PreloadWrap<K, V>(m_Map, asset, mono, out m_IsJson, 
+                (IDictionary maps) => {
+                    IConfigVoMap<K> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                });
+            return true;
+        }
     }
 
-    public class ConfigVoListMap<K, V> where V: ConfigBase<K> {
+    public class ConfigVoListMap<K, V> : IConfigVoMap<K> where V : ConfigBase<K> {
 
         private bool m_IsJson = true;
         private Dictionary<K, List<V>> m_Map = null;
+
+        public bool IsJson {
+            get {
+                return m_IsJson;
+            }
+        }
 
         public bool ContiansKey(K key) {
             if (m_Map == null)
@@ -221,6 +261,22 @@ namespace NsLib.Config {
             return m_Map != null;
         }
 
+        // 预加载
+        public bool Preload(TextAsset asset, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd) {
+            if (asset == null || mono == null)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K, List<V>>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.PreloadWrap<K, V>(m_Map, asset, mono, out m_IsJson,
+                (IDictionary maps) => {
+                    IConfigVoMap<K> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                });
+            return true;
+        }
     }
 
 }

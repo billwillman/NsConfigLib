@@ -199,7 +199,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps, 
             bool isLoadAll = false,
-            Action<Dictionary<K, V>> onOK = null) where V: ConfigBase<K>
+            Action<IDictionary> onOK = null) where V: ConfigBase<K>
         {
             if (stream == null || maps == null) {
                 yield break;
@@ -240,7 +240,7 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectAsync<K, V>(Stream stream, 
             Dictionary<K, V> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<Dictionary<K, V>> onOk = null) where V : ConfigBase<K>
+            Action<IDictionary> onOk = null) where V : ConfigBase<K>
         {
             if (stream == null || maps == null || mono == null)
                 return null;
@@ -285,7 +285,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
             Dictionary<K, List<V>> maps, bool isLoadAll = false,
-            Action<Dictionary<K, List<V>>> onOK = null) where V : ConfigBase<K>
+            Action<IDictionary> onOK = null) where V : ConfigBase<K>
         {
 
             if (stream == null || maps == null) {
@@ -340,7 +340,7 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectListAsync<K, V>(Stream stream,
             Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<Dictionary<K, List<V>>> onOK = null) where V : ConfigBase<K>
+            Action<IDictionary> onOK = null) where V : ConfigBase<K>
         {
             if (stream == null || maps == null || mono == null)
                 return null;
