@@ -58,6 +58,41 @@ namespace NsLib.Config {
             
         }
 
+        public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, TextAsset asset,
+            MonoBehaviour mono,
+            Action<Dictionary<K, List<V>>> onEnd) where V : ConfigBase<K> {
+
+            if (maps == null || asset == null || mono == null) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
+            maps.Clear();
+
+            MemoryStream stream = new MemoryStream(asset.bytes);
+
+
+            Coroutine cor = ConfigWrap.ToObjectListAsync<K, V>(stream, maps, mono, true, onEnd);
+            if (cor == null) {
+                stream.Close();
+                stream.Dispose();
+
+                Dictionary<K, List<V>> ret;
+                try {
+                    maps = JsonMapper.ToObject<Dictionary<K, List<V>>>(asset.text);
+                    ret = maps;
+                } catch {
+                    ret = null;
+                }
+
+                if (onEnd != null) {
+                    onEnd(ret);
+                }
+            }
+
+        }
+
         public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset, 
             bool isLoadAll = false) where V : ConfigBase<K> {
             if (asset == null)
@@ -74,6 +109,7 @@ namespace NsLib.Config {
             return ret;
         }
 
+        
         
     }
 
