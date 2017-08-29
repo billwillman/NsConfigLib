@@ -1,20 +1,25 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/NsConfigLib/Editor/ConfigAssetImporter.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/TestListConfig.cs">
     <Files>
-      <File FileName="Assets/Scripts/TestListConfig.cs" Line="44" Column="49" />
-      <File FileName="Assets/Scripts/NsConfigLib/ConfigWrap.cs" Line="106" Column="66" />
-      <File FileName="Assets/Scripts/NsConfigLib/ConfigBase.cs" Line="55" Column="1" />
-      <File FileName="Assets/Scripts/Util/FilePathMgr.cs" Line="247" Column="23" />
+      <File FileName="Assets/Scripts/TestListConfig.cs" Line="64" Column="42" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigWrap.cs" Line="208" Column="28" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigBase.cs" Line="60" Column="1" />
+      <File FileName="Assets/Scripts/Util/FilePathMgr.cs" Line="67" Column="1" />
       <File FileName="Assets/Resources/TaskTalkCfg.txt" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Task.cs" Line="6" Column="1" />
-      <File FileName="Assets/Scripts/NsConfigLib/ConfigConvertAttribute.cs" Line="18" Column="10" />
-      <File FileName="Assets/Scripts/NsConfigLib/ConfigAttribute.cs" Line="44" Column="14" />
-      <File FileName="Assets/Scripts/NsConfigLib/Editor/ConfigAssetImporter.cs" Line="32" Column="17" />
+      <File FileName="Assets/Scripts/Task.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigConvertAttribute.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigAttribute.cs" Line="12" Column="9" />
+      <File FileName="Assets/Scripts/NsConfigLib/Editor/ConfigAssetImporter.cs" Line="61" Column="53" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigHeader.cs" Line="75" Column="1" />
+      <File FileName="Assets/Scripts/NsConfigLib/ConfigConvertManager.cs" Line="68" Column="62" />
+      <File FileName="Assets/Resources/TaskTalkCfg_Binary.bytes" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/sheqiong/NsConfigLib/Assets/Scripts/NsConfigLib/ConfigWrap.cs" line="383" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

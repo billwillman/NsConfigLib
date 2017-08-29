@@ -27,19 +27,26 @@ namespace NsLib.Config {
     public abstract class ConfigBase<KEY>: IConfigBase {
         // private static List<System.Reflection.PropertyInfo> m_Props = null;
         private static Dictionary<System.Type, List<System.Reflection.PropertyInfo>> m_PropsMap = new Dictionary<Type, List<System.Reflection.PropertyInfo>>();
+        private List<System.Reflection.PropertyInfo> _Propertys = null;
 
         protected List<System.Reflection.PropertyInfo> Propertys {
             get {
-                System.Type type = GetType();
-                List<System.Reflection.PropertyInfo> ret = null;
-                if (!m_PropsMap.TryGetValue(type, out ret))
-                    ret = null;
-                return ret;
+                if (_Propertys == null) {
+                    System.Type type = GetType ();
+                    List<System.Reflection.PropertyInfo> ret = null;
+                    if (!m_PropsMap.TryGetValue (type, out ret))
+                        ret = null;
+                    _Propertys = ret;
+                    return ret;
+                }
+
+                return _Propertys;
             }
             set {
                 if (value != null && value.Count > 0) {
                     System.Type type = GetType();
                     m_PropsMap[type] = value;
+                    _Propertys = value;
                 }
             }
         }
