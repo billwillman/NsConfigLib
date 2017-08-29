@@ -27,6 +27,18 @@ namespace NsLib.Config {
             return ret;
         }
 
+        public static Dictionary<K, List<V>> ToObjectList<K, V>(byte[] buffer, 
+            bool isLoadAll = false) where V: ConfigBase<K> {
+            Dictionary<K, List<V>> ret = null;
+            if (buffer == null || buffer.Length <= 0)
+                return ret;
+
+            MemoryStream stream = new MemoryStream(buffer);
+            ret = ToObjectList<K, V>(stream, isLoadAll);
+
+            return ret;
+        }
+
         private static V ReadItem<K, V>(Dictionary<K, V> maps, K key) where V : ConfigBase<K> {
             if (maps == null || maps.Count <= 0)
                 return null;
