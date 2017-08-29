@@ -11,12 +11,9 @@ namespace NsLib.Config {
     public static class ConfigWrap {
 
         private enum ConfigValueType {
-            // 就是自己
             cvObject = 0,
-            // 是一个列表
             cvList = 1,
-            // 是一个字典
-            cvDict = 2
+            cvMap = 2
         }
 
         public static Dictionary<K, V> ToObject<K, V>(byte[] buffer, bool isLoadAll = false) where V: ConfigBase<K> {
@@ -379,7 +376,7 @@ namespace NsLib.Config {
                         v.WriteValue();
                     }
                 } else {
-                    valueType = ConfigValueType.cvObject;
+                    valueType =  ConfigValueType.cvObject;
                     IConfigBase v = iter.Value as IConfigBase;
                     v.stream = stream;
                     v.dataOffset = stream.Position;
@@ -405,7 +402,7 @@ namespace NsLib.Config {
                         FilePathMgr.Instance.WriteInt(stream, vs.Count);
                     }
                 }
-            } else {
+            } else if (valueType == ConfigValueType.cvObject) {
                 iter = values.GetEnumerator();
                 while (iter.MoveNext()) {
                     System.Object key = iter.Key;
@@ -446,7 +443,7 @@ namespace NsLib.Config {
 
             long indexOffset = stream.Position;
             // 是否是List
-            stream.WriteByte((byte)ConfigValueType.cvList);
+            FilePathMgr.Instance.WriteBool(stream, true);
             // 写入索引
             iter = values.GetEnumerator();
             while (iter.MoveNext()) {
@@ -487,7 +484,7 @@ namespace NsLib.Config {
             long indexOffset = stream.Position;
 
             // 是否是List
-            stream.WriteByte((byte)ConfigValueType.cvObject);
+            FilePathMgr.Instance.WriteBool(stream, false);
             // 写入索引
             iter = values.GetEnumerator();
             while (iter.MoveNext()) {
