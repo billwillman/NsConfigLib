@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using NsLib.Utils;
+using Utils;
 
 // 配置文件库
 namespace NsLib.Config {
