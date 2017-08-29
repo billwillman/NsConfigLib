@@ -2,13 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Utils;
+using NsLib.Utils;
 
 // 配置文件库
 namespace NsLib.Config {
     
     // 转换器
     public static class ConfigWrap {
+
+        private enum ConfigValueType {
+            // 就是自己
+            cvObject = 0,
+            // 是一个列表
+            cvList = 1,
+            // 是一个字典
+            cvDict = 2
+        }
 
         public static Dictionary<K, V> ToObject<K, V>(byte[] buffer, bool isLoadAll = false) where V: ConfigBase<K> {
             Dictionary<K, V> ret = null;
@@ -183,8 +192,8 @@ namespace NsLib.Config {
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
 
-            bool isListValue = FilePathMgr.Instance.ReadBool(stream);
-            if (isListValue)
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvObject)
                 yield break;
 
 
@@ -225,8 +234,8 @@ namespace NsLib.Config {
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
 
-            bool isListValue = FilePathMgr.Instance.ReadBool(stream);
-            if (isListValue)
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvObject)
                 return null;
 
             Dictionary<K, V> maps = null;
@@ -264,8 +273,8 @@ namespace NsLib.Config {
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
 
-            bool isListValue = FilePathMgr.Instance.ReadBool(stream);
-            if (!isListValue)
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvList)
                 yield break;
 
 
@@ -315,8 +324,8 @@ namespace NsLib.Config {
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
 
-            bool isListValue = FilePathMgr.Instance.ReadBool(stream);
-            if (!isListValue)
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvList)
                 return null;
 
             Dictionary<K, List<V>> maps = null;
@@ -356,12 +365,12 @@ namespace NsLib.Config {
             header.SaveToStream(stream);
 
             var iter = values.GetEnumerator();
-            bool isListMode = false;
+            ConfigValueType valueType = ConfigValueType.cvObject;
             while (iter.MoveNext()) {
                 IList vs = iter.Value as IList;
                 if (vs != null) {
                     // 说明是listMode
-                    isListMode = true;
+                    valueType = ConfigValueType.cvList;
                     long dataOffset = stream.Position;
                     for (int i = 0; i < vs.Count; ++i) {
                         IConfigBase v = vs[i] as IConfigBase;
@@ -370,7 +379,7 @@ namespace NsLib.Config {
                         v.WriteValue();
                     }
                 } else {
-                    isListMode = false;
+                    valueType = ConfigValueType.cvObject;
                     IConfigBase v = iter.Value as IConfigBase;
                     v.stream = stream;
                     v.dataOffset = stream.Position;
@@ -380,9 +389,9 @@ namespace NsLib.Config {
 
 
             long indexOffset = stream.Position;
-            FilePathMgr.Instance.WriteBool(stream, isListMode);
+            stream.WriteByte((byte)valueType);
 
-            if (isListMode) {
+            if (valueType == ConfigValueType.cvList) {
                 iter = values.GetEnumerator();
                 while (iter.MoveNext()) {
                     System.Object key = iter.Key;
@@ -437,7 +446,7 @@ namespace NsLib.Config {
 
             long indexOffset = stream.Position;
             // 是否是List
-            FilePathMgr.Instance.WriteBool(stream, true);
+            stream.WriteByte((byte)ConfigValueType.cvList);
             // 写入索引
             iter = values.GetEnumerator();
             while (iter.MoveNext()) {
@@ -478,7 +487,7 @@ namespace NsLib.Config {
             long indexOffset = stream.Position;
 
             // 是否是List
-            FilePathMgr.Instance.WriteBool(stream, false);
+            stream.WriteByte((byte)ConfigValueType.cvObject);
             // 写入索引
             iter = values.GetEnumerator();
             while (iter.MoveNext()) {
