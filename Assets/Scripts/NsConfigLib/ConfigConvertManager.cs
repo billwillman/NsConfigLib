@@ -66,7 +66,7 @@ namespace NsLib.Config {
             if (values == null)
                 return;
             string newFileName = string.Format("{0}/{1}.bytes", Path.GetDirectoryName(fileName), info.convertName);
-            FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.ReadWrite);
+            FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
             try {
                 ConfigWrap.ToStream(stream, values);
             } finally {
