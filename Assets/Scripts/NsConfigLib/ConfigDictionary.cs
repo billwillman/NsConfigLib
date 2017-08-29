@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using LitJson;
 
 namespace NsLib.Config {
 
-    // 配置文件定义的字典基础类，主要用于重载方法，不影响使用
-    // 可以使用ContainsKey方法，可以使用[]
-    public class ConfigDictionary<T> : Dictionary<string, T> {
+    public static class ConfigDictionary {
         public static Dictionary<K, V> ToWrap<K, V>(TextAsset asset, bool isLoadAll = false) where V: ConfigBase<K> {
             if (asset == null)
                 return null;
@@ -22,6 +21,43 @@ namespace NsLib.Config {
                 }
             }
             return ret;
+        }
+
+        // 预加载用
+        public static void PreloadWrap<K, V>(Dictionary<K, V> maps, TextAsset asset,
+            MonoBehaviour mono,
+            Action<Dictionary<K, V>> onEnd) where V : ConfigBase<K> {
+            if (maps == null || asset == null || mono == null) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
+            maps.Clear();
+
+            MemoryStream stream = new MemoryStream(asset.bytes);
+
+
+            Coroutine cor = ConfigWrap.ToObjectAsync<K, V>(stream, maps, mono, true);
+            if (cor == null) {
+                stream.Close();
+                stream.Dispose();
+
+                Dictionary<K, V> ret;
+                try {
+                    maps = JsonMapper.ToObject<Dictionary<K, V>>(asset.text);
+                    ret = maps;
+                } catch {
+                    ret = null;
+                }
+
+                if (onEnd != null) {
+                    onEnd(ret);
+                }
+            } else {
+                
+            }
+            
         }
 
         public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset, bool isLoadAll = false) where V : ConfigBase<K> {
@@ -38,6 +74,8 @@ namespace NsLib.Config {
             }
             return ret;
         }
+
+        
     }
 
 }

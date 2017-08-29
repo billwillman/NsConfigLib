@@ -23,6 +23,10 @@ namespace NsLib.Config {
 
             MemoryStream stream = new MemoryStream(buffer);
             ret = ToObject<K, V>(stream, isLoadAll);
+            if (ret == null) {
+                stream.Close();
+                stream.Dispose();
+            }
 
             return ret;
         }
@@ -35,6 +39,10 @@ namespace NsLib.Config {
 
             MemoryStream stream = new MemoryStream(buffer);
             ret = ToObjectList<K, V>(stream, isLoadAll);
+            if (ret == null) {
+                stream.Close();
+                stream.Dispose();
+            }
 
             return ret;
         }
