@@ -197,21 +197,32 @@ namespace NsLib.Config {
             iter.Dispose();
         }
 
-        private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps, bool isLoadAll = false) where V: ConfigBase<K>
+        private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps, 
+            bool isLoadAll = false,
+            Action<Dictionary<K, V>> onEnd = null) where V: ConfigBase<K>
         {
-            if (stream == null || maps == null || maps.Count <= 0)
+            if (stream == null || maps == null || maps.Count <= 0) {
+                if (onEnd != null)
+                    onEnd(null);
                 yield break;
+            }
             maps.Clear ();
             ConfigFileHeader header = new ConfigFileHeader();
-            if (!header.LoadFromStream(stream) || !header.IsVaild)
+            if (!header.LoadFromStream(stream) || !header.IsVaild) {
+                if (onEnd != null)
+                    onEnd(null);
                 yield break;
+            }
 
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
 
             ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
-            if (valueType != ConfigValueType.cvObject)
+            if (valueType != ConfigValueType.cvObject) {
+                if (onEnd != null)
+                    onEnd(null);
                 yield break;
+            }
 
 
             for (uint i = 0; i < header.Count; ++i) {
@@ -228,15 +239,19 @@ namespace NsLib.Config {
             }
 
             yield return StartLoadCortine<K, V> (maps);
+
+            if (onEnd != null)
+                onEnd(maps);
         }
 
         public static UnityEngine.Coroutine ToObjectAsync<K, V>(Stream stream, 
-            Dictionary<K, V> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false) where V : ConfigBase<K>
+            Dictionary<K, V> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
+            Action<Dictionary<K, V>> onEnd = null) where V : ConfigBase<K>
         {
             if (stream == null || maps == null || mono == null)
                 return null;
            
-            return mono.StartCoroutine(_ToObjectAsync<K, V>(stream, maps, isLoadAll));
+            return mono.StartCoroutine(_ToObjectAsync<K, V>(stream, maps, isLoadAll, onEnd));
         }
 
         // 首次读取
@@ -275,24 +290,34 @@ namespace NsLib.Config {
 
 
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
-            Dictionary<K, List<V>> maps, bool isLoadAll = false) where V : ConfigBase<K>
+            Dictionary<K, List<V>> maps, bool isLoadAll = false,
+            Action<Dictionary<K, List<V>>> onEnd = null) where V : ConfigBase<K>
         {
-            
-            if (stream == null || maps == null)
+
+            if (stream == null || maps == null) {
+                if (onEnd != null)
+                    onEnd(null);
                 yield break;
+            }
 
             maps.Clear ();
 
             ConfigFileHeader header = new ConfigFileHeader();
-            if (!header.LoadFromStream (stream) || !header.IsVaild)
+            if (!header.LoadFromStream(stream) || !header.IsVaild) {
+                if (onEnd != null)
+                    onEnd(null);
                 yield break;
+            }
 
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
 
             ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
-            if (valueType != ConfigValueType.cvList)
+            if (valueType != ConfigValueType.cvList) {
+                if (onEnd != null)
+                    onEnd(null);
                 yield break;
+            }
 
 
             for (uint i = 0; i < header.Count; ++i) {
@@ -320,14 +345,18 @@ namespace NsLib.Config {
             if (isLoadAll && maps.Count > 0) {
                 yield return StartLoadCortine<K, V> (maps);
             }
+
+            if (onEnd != null)
+                onEnd(maps);
         }
 
-        public static UnityEngine.Coroutine ToObjectListAsync<K, V>(Stream stream, 
-            Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false) where V : ConfigBase<K>
+        public static UnityEngine.Coroutine ToObjectListAsync<K, V>(Stream stream,
+            Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
+            Action<Dictionary<K, List<V>>> onEnd = null) where V : ConfigBase<K>
         {
             if (stream == null || maps == null || mono == null)
                 return null;
-            return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll));
+            return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onEnd));
         }
 
         public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false, 

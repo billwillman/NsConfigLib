@@ -38,7 +38,7 @@ namespace NsLib.Config {
             MemoryStream stream = new MemoryStream(asset.bytes);
 
 
-            Coroutine cor = ConfigWrap.ToObjectAsync<K, V>(stream, maps, mono, true);
+            Coroutine cor = ConfigWrap.ToObjectAsync<K, V>(stream, maps, mono, true, onEnd);
             if (cor == null) {
                 stream.Close();
                 stream.Dispose();
@@ -54,13 +54,12 @@ namespace NsLib.Config {
                 if (onEnd != null) {
                     onEnd(ret);
                 }
-            } else {
-                
             }
             
         }
 
-        public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset, bool isLoadAll = false) where V : ConfigBase<K> {
+        public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset, 
+            bool isLoadAll = false) where V : ConfigBase<K> {
             if (asset == null)
                 return null;
 
