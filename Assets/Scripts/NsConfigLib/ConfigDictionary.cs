@@ -24,14 +24,14 @@ namespace NsLib.Config {
             return ret;
         }
 
-        public static Dictionary<K, List<V>> ToWrap<K, V>(TextAsset asset, bool isLoadAll = false) where V : ConfigBase<K> {
+        public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset, bool isLoadAll = false) where V : ConfigBase<K> {
             if (asset == null)
                 return null;
 
             Dictionary<K, List<V>> ret = ConfigWrap.ToObjectList<K, V>(asset.bytes, isLoadAll);
             if (ret == null) {
                 try {
-                    ret = JsonMapper.ToObject<Dictionary<K, V>>(asset.text);
+                    ret = JsonMapper.ToObject<Dictionary<K, List<V>>>(asset.text);
                 } catch {
                     ret = null;
                 }
