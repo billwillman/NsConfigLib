@@ -65,7 +65,7 @@ namespace NsLib.Config {
             System.Collections.IDictionary values = LitJsonHelper.ToTypeObject(json, info.DictionaryType) as System.Collections.IDictionary;
             if (values == null)
                 return;
-            string newFileName = string.Format("{0}/{1}.bytes", Path.GetDirectoryName(fileName), info.convertName);
+            string newFileName = string.Format("{0}/{1}_Binary.bytes", Path.GetDirectoryName(fileName), info.convertName);
             FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
             try {
                 ConfigWrap.ToStream(stream, values);
