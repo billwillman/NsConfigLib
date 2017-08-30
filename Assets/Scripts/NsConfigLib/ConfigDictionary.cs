@@ -12,11 +12,19 @@ namespace NsLib.Config {
             isJson = false;
             if (asset == null)
                 return null;
+            return ToWrap<K, V>(asset.bytes, out isJson, isLoadAll);
+        }
 
-            Dictionary<K, V>  ret = ConfigWrap.ToObject<K, V>(asset.bytes, isLoadAll);
+        public static Dictionary<K, V> ToWrap<K, V>(byte[] buffer, out bool isJson, bool isLoadAll = false) where V : ConfigBase<K> {
+            isJson = false;
+            if (buffer == null)
+                return null;
+
+            Dictionary<K, V> ret = ConfigWrap.ToObject<K, V>(buffer, isLoadAll);
             if (ret == null) {
                 try {
-                    ret = JsonMapper.ToObject<Dictionary<K, V>>(asset.text);
+                    string text = System.Text.Encoding.UTF8.GetString(buffer);
+                    ret = JsonMapper.ToObject<Dictionary<K, V>>(text);
                     isJson = true;
                 } catch {
                     ret = null;
@@ -104,11 +112,22 @@ namespace NsLib.Config {
             isJson = false;
             if (asset == null)
                 return null;
+            return ToWrapList<K, V>(asset.bytes, out isJson, isLoadAll);
+        }
 
-            Dictionary<K, List<V>> ret = ConfigWrap.ToObjectList<K, V>(asset.bytes, isLoadAll);
+        public static Dictionary<K, List<V>> ToWrapList<K, V>(byte[] buffer,
+            out bool isJson,
+            bool isLoadAll = false) where V : ConfigBase<K> {
+
+            isJson = false;
+            if (buffer == null || buffer.Length <= 0)
+                return null;
+
+            Dictionary<K, List<V>> ret = ConfigWrap.ToObjectList<K, V>(buffer, isLoadAll);
             if (ret == null) {
                 try {
-                    ret = JsonMapper.ToObject<Dictionary<K, List<V>>>(asset.text);
+                    string text = System.Text.Encoding.UTF8.GetString(buffer);
+                    ret = JsonMapper.ToObject<Dictionary<K, List<V>>>(text);
                     isJson = true;
                 } catch {
                     ret = null;
@@ -117,8 +136,7 @@ namespace NsLib.Config {
             return ret;
         }
 
-        
-        
+
     }
 
     public interface IConfigVoMap<K> {
@@ -171,6 +189,12 @@ namespace NsLib.Config {
                 return false;
             m_Map = ConfigDictionary.ToWrap<K, V>(asset, out m_IsJson, isLoadAll);
             return m_Map != null;
+        }
+
+        public bool LoadFromBytes(byte[] buffer, bool isLoadAll = false) {
+            if (buffer == null || buffer.Length <= 0)
+                return false;
+
         }
 
         public V this[K key] {
