@@ -140,7 +140,7 @@ namespace NsLib.Config {
     }
 
     public interface IConfigVoMap<K> {
-        bool ContiansKey(K key);
+        bool ContainsKey(K key);
         bool IsJson {
             get;
         }
@@ -165,7 +165,7 @@ namespace NsLib.Config {
             }
         }
 
-        public bool ContiansKey(K key) {
+        public bool ContainsKey(K key) {
             if (m_Map == null)
                 return false;
             return m_Map.ContainsKey(key);
