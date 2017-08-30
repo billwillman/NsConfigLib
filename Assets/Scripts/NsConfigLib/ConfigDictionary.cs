@@ -183,6 +183,7 @@ namespace NsLib.Config {
 
         // 预加载
         bool Preload(TextAsset asset, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd);
+        bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd);
     }
 
     
@@ -256,6 +257,22 @@ namespace NsLib.Config {
             else
                 m_Map.Clear();
             ConfigDictionary.PreloadWrap<K, V>(m_Map, asset, mono, out m_IsJson, 
+                (IDictionary maps) => {
+                    IConfigVoMap<K> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                });
+            return true;
+        }
+
+        public bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd) {
+            if (buffer == null || mono == null)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K, V>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.PreloadWrap<K, V>(m_Map, buffer, mono, out m_IsJson,
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
