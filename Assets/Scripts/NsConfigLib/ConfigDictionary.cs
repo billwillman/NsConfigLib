@@ -192,10 +192,44 @@ namespace NsLib.Config {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
 
+        public struct Enumerator {
+
+            internal Dictionary<K, V>.Enumerator Iteror {
+                get;
+                set;
+            }
+
+            public KeyValuePair<K, V> Current {
+                get {
+                    V config = Iteror.Current.Value;
+                    if (config == null)
+                        return new KeyValuePair<K, V>();
+                    config.ReadValue();
+                    return Iteror.Current;
+                }
+            }
+
+            public void Dispose() {
+                Iteror.Dispose();
+            }
+            public bool MoveNext() {
+                return Iteror.MoveNext();
+            }
+        }
+
         public bool IsJson {
             get {
                 return m_IsJson;
             }
+        }
+
+        public Enumerator GetEnumerator() {
+            if (m_Map == null)
+                return new Enumerator();
+            var iter = m_Map.GetEnumerator();
+            Enumerator ret = new Enumerator();
+            ret.Iteror = iter;
+            return ret;
         }
 
         public bool ContainsKey(K key) {
@@ -286,6 +320,42 @@ namespace NsLib.Config {
 
         private bool m_IsJson = true;
         private Dictionary<K, List<V>> m_Map = null;
+
+        public struct Enumerator {
+
+            internal Dictionary<K, List<V>>.Enumerator Iteror {
+                get;
+                set;
+            }
+
+            public KeyValuePair<K, List<V>> Current {
+                get {
+                    List<V> vs = Iteror.Current.Value as List<V>;
+                    if (vs == null)
+                        return new KeyValuePair<K, List<V>>();
+                    for (int i = 0; i < vs.Count; ++i) {
+                        var v = vs[i];
+                        v.ReadValue();
+                    }
+                    return Iteror.Current;
+                }
+            }
+
+            public void Dispose() {
+                Iteror.Dispose();
+            }
+            public bool MoveNext() {
+                return Iteror.MoveNext();
+            }
+        }
+
+        public Enumerator GetEnumerator() {
+            if (m_Map == null)
+                return new Enumerator();
+            Enumerator ret = new Enumerator();
+            ret.Iteror = m_Map.GetEnumerator();
+            return ret;
+        }
 
         public bool IsJson {
             get {
