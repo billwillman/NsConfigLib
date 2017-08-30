@@ -147,6 +147,8 @@ namespace NsLib.Config {
 
         bool LoadFromTextAsset(TextAsset asset, bool isLoadAll = false);
 
+        bool LoadFromBytes(byte[] buffer, bool isLoadAll = false);
+
         // 预加载
         bool Preload(TextAsset asset, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd);
     }
@@ -194,7 +196,8 @@ namespace NsLib.Config {
         public bool LoadFromBytes(byte[] buffer, bool isLoadAll = false) {
             if (buffer == null || buffer.Length <= 0)
                 return false;
-
+            m_Map = ConfigDictionary.ToWrap<K, V>(buffer, out m_IsJson, isLoadAll);
+            return m_Map != null;
         }
 
         public V this[K key] {
@@ -282,6 +285,13 @@ namespace NsLib.Config {
             if (asset == null)
                 return false;
             m_Map = ConfigDictionary.ToWrapList<K, V>(asset, out m_IsJson, isLoadAll);
+            return m_Map != null;
+        }
+
+        public bool LoadFromBytes(byte[] buffer, bool isLoadAll = false) {
+            if (buffer == null || buffer.Length <= 0)
+                return false;
+            m_Map = ConfigDictionary.ToWrapList<K, V>(buffer, out m_IsJson, isLoadAll);
             return m_Map != null;
         }
 
