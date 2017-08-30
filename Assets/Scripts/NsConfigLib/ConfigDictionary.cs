@@ -213,26 +213,25 @@ namespace NsLib.Config {
 
         public struct Enumerator {
             private bool m_IsJson;
-            private bool m_IsError;
-            public Enumerator(bool isJson, Dictionary<K, V>.Enumerator iter) {
+            public Enumerator(bool isJson, IEnumerator<KeyValuePair<K, V>> iter) {
                 m_IsJson = isJson;
                 Iteror = iter;
-                m_IsError = false;
             }
 
-            public Enumerator(bool isError) {
+            public Enumerator() {
                 m_IsJson = false;
-                Iteror = new Dictionary<K, V>.Enumerator();
-                m_IsError = isError;
+                Iteror = null;
             }
 
-            internal Dictionary<K, V>.Enumerator Iteror {
+            internal IEnumerator<KeyValuePair<K, V>> Iteror {
                 get;
                 private set;
             }
 
             public KeyValuePair<K, V> Current {
                 get {
+                    if (Iteror == null)
+                        return new KeyValuePair<K, V>();
                     if (m_IsJson) {
                         return Iteror.Current;
                     }
@@ -250,7 +249,7 @@ namespace NsLib.Config {
                 Iteror.Dispose();
             }
             public bool MoveNext() {
-                if (m_IsError)
+                if (Iteror == null)
                     return false;
                 return Iteror.MoveNext();
             }
@@ -390,26 +389,26 @@ namespace NsLib.Config {
 
         public struct Enumerator {
             private bool m_IsJson;
-            private bool m_IsError;
-            public Enumerator(bool isJson, Dictionary<K, List<V>>.Enumerator iter) {
+            public Enumerator(bool isJson, IEnumerator<KeyValuePair<K, List<V>>> iter) {
                 m_IsJson = isJson;
                 Iteror = iter;
-                m_IsError = false;
             }
 
-            public Enumerator(bool isError) {
+            public Enumerator() {
                 m_IsJson = false;
-                Iteror = new Dictionary<K, List<V>>.Enumerator();
-                m_IsError = isError;
+                Iteror = null;
             }
 
-            internal Dictionary<K, List<V>>.Enumerator Iteror {
+            internal IEnumerator<KeyValuePair<K, List<V>>> Iteror {
                 get;
                 private set;
             }
 
             public KeyValuePair<K, List<V>> Current {
                 get {
+
+                    if (Iteror == null)
+                        return new KeyValuePair<K, List<V>>();
 
                     if (m_IsJson)
                         return Iteror.Current;
@@ -437,7 +436,7 @@ namespace NsLib.Config {
                 Iteror.Dispose();
             }
             public bool MoveNext() {
-                if (m_IsError)
+                if (Iteror == null)
                     return false;
                 return Iteror.MoveNext();
             }
