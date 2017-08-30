@@ -258,7 +258,7 @@ namespace NsLib.Config {
 
         public Enumerator GetEnumerator() {
             if (m_Map == null)
-                return new Enumerator(true);
+                return new Enumerator();
             var iter = m_Map.GetEnumerator();
             Enumerator ret = new Enumerator(m_IsJson, iter);
             return ret;
