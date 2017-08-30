@@ -244,7 +244,7 @@ namespace NsLib.Config {
             }
         }
 
-        public bool ContiansKey(K key) {
+        public bool ContainsKey(K key) {
             if (m_Map == null)
                 return false;
             return m_Map.ContainsKey(key);
