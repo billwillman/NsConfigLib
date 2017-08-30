@@ -79,10 +79,12 @@
     <Compile Include="Assets\Scripts\LitJson\JsonWriter.cs" />
     <Compile Include="Assets\Scripts\LitJson\Lexer.cs" />
     <Compile Include="Assets\Scripts\LitJson\ParserToken.cs" />
+    <Compile Include="Assets\Scripts\Monster.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\ConfigAttribute.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\ConfigBase.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\ConfigConvertAttribute.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\ConfigConvertManager.cs" />
+    <Compile Include="Assets\Scripts\NsConfigLib\ConfigDictionary.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\ConfigHeader.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\ConfigWrap.cs" />
     <Compile Include="Assets\Scripts\NsConfigLib\LitJsonHelper.cs" />
