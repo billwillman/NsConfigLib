@@ -33,6 +33,44 @@ namespace NsLib.Config {
             return ret;
         }
 
+        public static void PreloadWrap<K, V>(Dictionary<K, V> maps, byte[] buffer,
+            MonoBehaviour mono, out bool isJson,
+            Action<IDictionary> onEnd) where V : ConfigBase<K> {
+
+            isJson = false;
+            if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
+            maps.Clear();
+
+            MemoryStream stream = new MemoryStream(buffer);
+
+
+            Coroutine cor = ConfigWrap.ToObjectAsync<K, V>(stream, maps, mono, true, onEnd);
+            if (cor == null) {
+                stream.Close();
+                stream.Dispose();
+
+                Dictionary<K, V> ret;
+                try {
+                    string text = System.Text.Encoding.UTF8.GetString(buffer);
+                    maps = JsonMapper.ToObject<Dictionary<K, V>>(text);
+                    ret = maps;
+                    isJson = true;
+                } catch {
+                    ret = null;
+                }
+
+                if (onEnd != null) {
+                    onEnd(ret);
+                }
+            }
+
+        }
+
         // 预加载用
         public static void PreloadWrap<K, V>(Dictionary<K, V> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
@@ -44,19 +82,36 @@ namespace NsLib.Config {
                 return;
             }
 
+            PreloadWrap<K, V>(maps, asset.bytes, mono, out isJson, onEnd);
+
+
+        }
+
+        public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, byte[] buffer,
+            MonoBehaviour mono, out bool isJson,
+            Action<IDictionary> onEnd) where V : ConfigBase<K> {
+
+            isJson = false;
+            if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
             maps.Clear();
 
-            MemoryStream stream = new MemoryStream(asset.bytes);
+            MemoryStream stream = new MemoryStream(buffer);
 
 
-            Coroutine cor = ConfigWrap.ToObjectAsync<K, V>(stream, maps, mono, true, onEnd);
+            Coroutine cor = ConfigWrap.ToObjectListAsync<K, V>(stream, maps, mono, true, onEnd);
             if (cor == null) {
                 stream.Close();
                 stream.Dispose();
 
-                Dictionary<K, V> ret;
+                Dictionary<K, List<V>> ret;
                 try {
-                    maps = JsonMapper.ToObject<Dictionary<K, V>>(asset.text);
+                    string text = System.Text.Encoding.UTF8.GetString(buffer);
+                    maps = JsonMapper.ToObject<Dictionary<K, List<V>>>(text);
                     ret = maps;
                     isJson = true;
                 } catch {
@@ -67,7 +122,7 @@ namespace NsLib.Config {
                     onEnd(ret);
                 }
             }
-            
+
         }
 
         public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, TextAsset asset,
@@ -80,30 +135,7 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
-
-            MemoryStream stream = new MemoryStream(asset.bytes);
-
-
-            Coroutine cor = ConfigWrap.ToObjectListAsync<K, V>(stream, maps, mono, true, onEnd);
-            if (cor == null) {
-                stream.Close();
-                stream.Dispose();
-
-                Dictionary<K, List<V>> ret;
-                try {
-                    maps = JsonMapper.ToObject<Dictionary<K, List<V>>>(asset.text);
-                    ret = maps;
-                    isJson = true;
-                } catch {
-                    ret = null;
-                }
-
-                if (onEnd != null) {
-                    onEnd(ret);
-                }
-            }
-
+            PreloadWrap<K, V>(maps, asset.bytes, mono, out isJson, onEnd);
         }
 
         public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset,
@@ -293,6 +325,22 @@ namespace NsLib.Config {
                 return false;
             m_Map = ConfigDictionary.ToWrapList<K, V>(buffer, out m_IsJson, isLoadAll);
             return m_Map != null;
+        }
+
+        public bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono, Action<IConfigVoMap<K>> onEnd) {
+            if (buffer == null || mono == null || buffer.Length <= 0)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K, List<V>>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.PreloadWrap<K, V>(m_Map, buffer, mono, out m_IsJson,
+                (IDictionary maps) => {
+                    IConfigVoMap<K> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                });
+            return true;
         }
 
         // 预加载
