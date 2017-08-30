@@ -193,6 +193,7 @@ namespace NsLib.Config {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
 
+        // 尽量少用这个方法，因为这样会导致配置全加载
         public List<V> ValueList {
             get {
                 if (m_Map == null)
@@ -212,9 +213,17 @@ namespace NsLib.Config {
 
         public struct Enumerator {
             private bool m_IsJson;
+            private bool m_IsError;
             public Enumerator(bool isJson, Dictionary<K, V>.Enumerator iter) {
                 m_IsJson = isJson;
                 Iteror = iter;
+                m_IsError = false;
+            }
+
+            public Enumerator(bool isError) {
+                m_IsJson = false;
+                Iteror = new Dictionary<K, V>.Enumerator();
+                m_IsError = isError;
             }
 
             internal Dictionary<K, V>.Enumerator Iteror {
@@ -228,8 +237,9 @@ namespace NsLib.Config {
                         return Iteror.Current;
                     }
                     V config = Iteror.Current.Value;
-                    if (config == null)
+                    if (config == null) {
                         return new KeyValuePair<K, V>();
+                    }
                     config.StreamSeek();
                     config.ReadValue();
                     return Iteror.Current;
@@ -240,6 +250,8 @@ namespace NsLib.Config {
                 Iteror.Dispose();
             }
             public bool MoveNext() {
+                if (m_IsError)
+                    return false;
                 return Iteror.MoveNext();
             }
         }
@@ -252,7 +264,7 @@ namespace NsLib.Config {
 
         public Enumerator GetEnumerator() {
             if (m_Map == null)
-                return new Enumerator();
+                return new Enumerator(true);
             var iter = m_Map.GetEnumerator();
             Enumerator ret = new Enumerator(m_IsJson, iter);
             return ret;
@@ -378,9 +390,17 @@ namespace NsLib.Config {
 
         public struct Enumerator {
             private bool m_IsJson;
+            private bool m_IsError;
             public Enumerator(bool isJson, Dictionary<K, List<V>>.Enumerator iter) {
                 m_IsJson = isJson;
                 Iteror = iter;
+                m_IsError = false;
+            }
+
+            public Enumerator(bool isError) {
+                m_IsJson = false;
+                Iteror = new Dictionary<K, List<V>>.Enumerator();
+                m_IsError = isError;
             }
 
             internal Dictionary<K, List<V>>.Enumerator Iteror {
@@ -417,13 +437,15 @@ namespace NsLib.Config {
                 Iteror.Dispose();
             }
             public bool MoveNext() {
+                if (m_IsError)
+                    return false;
                 return Iteror.MoveNext();
             }
         }
 
         public Enumerator GetEnumerator() {
             if (m_Map == null)
-                return new Enumerator();
+                return new Enumerator(true);
             Enumerator ret = new Enumerator(m_IsJson, m_Map.GetEnumerator());
             return ret;
         }
