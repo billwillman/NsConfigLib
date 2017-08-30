@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using LitJson;
+using System.Linq;
 
 namespace NsLib.Config {
 
@@ -192,18 +193,44 @@ namespace NsLib.Config {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
 
+        public List<V> ValueList {
+            get {
+                if (m_Map == null)
+                    return null;
+                List<V> ret = m_Map.Values.ToList();
+                if (m_IsJson)
+                    return ret;
+                if (ret != null) {
+                    for (int i = 0; i < ret.Count; ++i) {
+                        V v = ret[i];
+                        v.ReadValue();
+                    }
+                }
+                return ret;
+            }
+        }
+
         public struct Enumerator {
+            private bool m_IsJson;
+            public Enumerator(bool isJson, Dictionary<K, V>.Enumerator iter) {
+                m_IsJson = isJson;
+                Iteror = iter;
+            }
 
             internal Dictionary<K, V>.Enumerator Iteror {
                 get;
-                set;
+                private set;
             }
 
             public KeyValuePair<K, V> Current {
                 get {
+                    if (m_IsJson) {
+                        return Iteror.Current;
+                    }
                     V config = Iteror.Current.Value;
                     if (config == null)
                         return new KeyValuePair<K, V>();
+                    config.StreamSeek();
                     config.ReadValue();
                     return Iteror.Current;
                 }
@@ -227,8 +254,7 @@ namespace NsLib.Config {
             if (m_Map == null)
                 return new Enumerator();
             var iter = m_Map.GetEnumerator();
-            Enumerator ret = new Enumerator();
-            ret.Iteror = iter;
+            Enumerator ret = new Enumerator(m_IsJson, iter);
             return ret;
         }
 
@@ -321,20 +347,66 @@ namespace NsLib.Config {
         private bool m_IsJson = true;
         private Dictionary<K, List<V>> m_Map = null;
 
+        public List<List<V>> ValueList {
+            get {
+                if (m_Map == null)
+                    return null;
+                List<List<V>> ret = m_Map.Values.ToList();
+                if (m_IsJson)
+                    return ret;
+                if (ret != null) {
+                    
+                    for (int i = 0; i < ret.Count; ++i) {
+                        List<V> vs = ret[i];
+                        if (vs != null && vs.Count > 0) {
+                            V v = vs[0];
+                            if (v.IsReaded)
+                                continue;
+                            v.StreamSeek();
+                            v.ReadValue();
+                            for (int j = 1; j < vs.Count; ++j) {
+                                v = vs[j];
+                                v.ReadValue();
+                            }
+                        }
+                    }
+
+                }
+                return ret;
+            }
+        }
+
         public struct Enumerator {
+            private bool m_IsJson;
+            public Enumerator(bool isJson, Dictionary<K, List<V>>.Enumerator iter) {
+                m_IsJson = isJson;
+                Iteror = iter;
+            }
 
             internal Dictionary<K, List<V>>.Enumerator Iteror {
                 get;
-                set;
+                private set;
             }
 
             public KeyValuePair<K, List<V>> Current {
                 get {
+
+                    if (m_IsJson)
+                        return Iteror.Current;
+
                     List<V> vs = Iteror.Current.Value as List<V>;
-                    if (vs == null)
+                    if (vs == null || vs.Count <= 0)
                         return new KeyValuePair<K, List<V>>();
-                    for (int i = 0; i < vs.Count; ++i) {
-                        var v = vs[i];
+
+                    var v = vs[0];
+                    if (v.IsReaded)
+                        return Iteror.Current;
+
+                    v.StreamSeek();
+                    v.ReadValue();
+
+                    for (int i = 1; i < vs.Count; ++i) {
+                        v = vs[i];
                         v.ReadValue();
                     }
                     return Iteror.Current;
@@ -352,8 +424,7 @@ namespace NsLib.Config {
         public Enumerator GetEnumerator() {
             if (m_Map == null)
                 return new Enumerator();
-            Enumerator ret = new Enumerator();
-            ret.Iteror = m_Map.GetEnumerator();
+            Enumerator ret = new Enumerator(m_IsJson, m_Map.GetEnumerator());
             return ret;
         }
 
