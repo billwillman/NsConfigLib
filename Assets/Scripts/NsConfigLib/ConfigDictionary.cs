@@ -218,11 +218,6 @@ namespace NsLib.Config {
                 Iteror = iter;
             }
 
-            public Enumerator() {
-                m_IsJson = false;
-                Iteror = null;
-            }
-
             internal IEnumerator<KeyValuePair<K, V>> Iteror {
                 get;
                 private set;
@@ -394,11 +389,6 @@ namespace NsLib.Config {
                 Iteror = iter;
             }
 
-            public Enumerator() {
-                m_IsJson = false;
-                Iteror = null;
-            }
-
             internal IEnumerator<KeyValuePair<K, List<V>>> Iteror {
                 get;
                 private set;
@@ -444,7 +434,7 @@ namespace NsLib.Config {
 
         public Enumerator GetEnumerator() {
             if (m_Map == null)
-                return new Enumerator(true);
+                return new Enumerator();
             Enumerator ret = new Enumerator(m_IsJson, m_Map.GetEnumerator());
             return ret;
         }
