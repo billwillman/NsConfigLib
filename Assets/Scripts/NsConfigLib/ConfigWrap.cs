@@ -315,6 +315,8 @@ namespace NsLib.Config {
             return true;
         }
 
+        // 测试用
+#if UNITY_EDITOR
         // 通用转换
         // 可以使用List<ConfigBase>或者ConfigBase
         public static Dictionary<K, V> TestCommonToObject<K, V>(byte[] buffer,
@@ -485,7 +487,7 @@ namespace NsLib.Config {
 
             return maps;
         }
-
+#endif
 
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
             Dictionary<K, List<V>> maps, bool isLoadAll = false,
