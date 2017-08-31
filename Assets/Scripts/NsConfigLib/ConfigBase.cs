@@ -20,8 +20,11 @@ namespace NsLib.Config {
         }
 
         bool WriteValue();
+        bool ReadValue();
 
         bool WriteKey(System.Object key);
+
+        System.Object ReadKEY();
     }
 
     public abstract class ConfigBase<KEY>: IConfigBase {
@@ -95,6 +98,10 @@ namespace NsLib.Config {
         internal abstract KEY ReadKey();
         internal abstract bool WriteKey(KEY key);
 
+        public System.Object ReadKEY() {
+            return ReadKey();
+        }
+
         public bool StreamSeek()
         {
             if (stream == null)
@@ -107,7 +114,7 @@ namespace NsLib.Config {
         // 不使用反射来做（为了性能）
         // 默认情况使用反射来处理，后面类继承这个方法，工具生成这个代码
         // 后面一定要用工具生成代码，减少反射（因为是正式游戏运行时使用）
-        internal virtual bool ReadValue() {
+        public virtual bool ReadValue() {
             if (stream == null)
                 return false;
 

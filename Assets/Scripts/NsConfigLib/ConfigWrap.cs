@@ -142,6 +142,41 @@ namespace NsLib.Config {
             return values != null;
         }
 
+        private static UnityEngine.Coroutine StartLoadAllCortine(IDictionary maps,
+            UnityEngine.MonoBehaviour parent, ConfigValueType valueType) {
+            if (maps == null || maps.Count <= 0)
+                return null;
+            if (parent != null) {
+
+            } else {
+                if (valueType == ConfigValueType.cvObject) {
+                    var iter = maps.GetEnumerator();
+                    while (iter.MoveNext()) {
+                        IConfigBase config = iter.Value as IConfigBase;
+                        Stream stream = config.stream;
+                        stream.Seek(config.dataOffset, SeekOrigin.Begin);
+                        config.ReadValue();
+                    }
+                    //iter.Dispose();
+                } else if (valueType == ConfigValueType.cvList) {
+                    var iter = maps.GetEnumerator();
+                    while (iter.MoveNext()) {
+                        IList vs = iter.Value as IList;
+                        IConfigBase v = vs[0] as IConfigBase;
+                        Stream stream = v.stream;
+                        stream.Seek(v.dataOffset, SeekOrigin.Begin);
+                        for (int i = 0; i < vs.Count; ++i) {
+                            v = vs[i] as IConfigBase;
+                            v.ReadValue();
+                        }
+                    }
+                   // iter.Dispose();
+                }
+            }
+
+            return null;
+        }
+
         private static UnityEngine.Coroutine StartLoadAllCortine<K, V>(Dictionary<K, V> maps,
             UnityEngine.MonoBehaviour parent, ConfigValueType valueType) where V : class {
             if (maps == null || maps.Count <= 0)
@@ -294,6 +329,85 @@ namespace NsLib.Config {
             }
 
             return ret;
+        }
+
+        public static IDictionary TestCommonToObject(byte[] buffer, System.Type configType,
+            System.Type dictType, bool isLoadAll = false,
+            UnityEngine.MonoBehaviour loadAllCortine = null) {
+            if (buffer == null || buffer.Length <= 0 || configType == null || dictType == null)
+                return null;
+            MemoryStream stream = new MemoryStream(buffer);
+            IDictionary ret = TestCommonToObject(stream, configType, dictType, isLoadAll,
+                loadAllCortine);
+            if (ret == null) {
+                stream.Close();
+                stream.Dispose();
+            }
+            return ret;
+        }
+
+        public static IDictionary TestCommonToObject(Stream stream, System.Type configType,
+            System.Type dictType, bool isLoadAll = false,
+            UnityEngine.MonoBehaviour loadAllCortine = null) {
+            if (stream == null || configType == null || dictType == null)
+                return null;
+
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild) {
+                return null;
+            }
+
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+            // 读取类型(之前已经获取到了)
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+
+            IDictionary maps = null;
+            switch (valueType) {
+                case ConfigValueType.cvObject: {
+                        for (uint i = 0; i < header.Count; ++i) {
+                            IConfigBase config = Activator.CreateInstance(configType) as IConfigBase;
+                            config.stream = stream;
+                            System.Object key = config.ReadKEY();
+                            config.dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                            if (maps == null)
+                                maps = Activator.CreateInstance(dictType) as IDictionary;
+                            maps[key] = config;
+                        }
+                        break;
+                    }
+                case ConfigValueType.cvList: {
+                        var vsType = typeof(List<>).MakeGenericType(configType);
+                        for (uint i = 0; i < header.Count; ++i) {
+                            IConfigBase config = Activator.CreateInstance(configType) as IConfigBase;
+                            config.stream = stream;
+                            System.Object key = config.ReadKEY();
+                            long dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                            config.dataOffset = dataOffset;
+                            int listCnt = FilePathMgr.Instance.ReadInt(stream);
+                            if (maps == null)
+                                maps = Activator.CreateInstance(dictType) as IDictionary;
+                            IList list = Activator.CreateInstance(vsType) as IList;
+                            maps[key] = list;
+                            list.Add(config);
+                            for (int j = 1; j < listCnt; ++j) {
+                                config = Activator.CreateInstance(configType) as IConfigBase;
+                                config.stream = stream;
+                                config.dataOffset = dataOffset;
+                                list.Add(config);
+                            }
+                        }
+                        break;
+                    }
+                default:
+                    return null;
+            }
+
+            if (isLoadAll && maps != null && maps.Count > 0) {
+                StartLoadAllCortine(maps, loadAllCortine, valueType);
+            }
+
+            return maps;
         }
 
 

@@ -84,8 +84,18 @@ namespace NsLib.Config {
             return ret;
         }
 
+        public static ConvertClassInfo GetTargetConvert(string targetConvertName) {
+            if (string.IsNullOrEmpty(targetConvertName))
+                return null;
+            ConvertClassInfo ret;
+            if (!m_TargetNameMap.TryGetValue(targetConvertName, out ret))
+                ret = null;
+            return ret;
+        }
+
 
         private static Dictionary<string, ConvertClassInfo> m_ConvertClassMap = new Dictionary<string, ConvertClassInfo>();
+        private static Dictionary<string, ConvertClassInfo> m_TargetNameMap = new Dictionary<string, ConvertClassInfo>();
 
         private static bool BuildConfigConvertClass(System.Type t) {
             if (t == null)
@@ -100,6 +110,7 @@ namespace NsLib.Config {
                         continue;
                     ConvertClassInfo info = new ConvertClassInfo(t, attr);
                     m_ConvertClassMap[attr.ConfigName] = info;
+                    m_TargetNameMap[info.convertName] = info;
                     ret = true;
                     break;
                 }
@@ -166,6 +177,7 @@ namespace NsLib.Config {
 
         private static void ClearConvertMaps() {
             m_ConvertClassMap.Clear();
+            m_TargetNameMap.Clear();
         }
 
         // 重新编译配置Convert表

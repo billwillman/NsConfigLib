@@ -74,7 +74,7 @@ namespace NsLib.Config
         }
 
         [MenuItem("Assets/配置读取测试", true)]
-        public bool IsCanReadConfig() {
+        public static bool IsCanReadConfig() {
             var selectObj = Selection.activeObject;
             if (selectObj == null)
                 return false;
@@ -85,10 +85,35 @@ namespace NsLib.Config
             if (string.Compare(ext, ".txt", true) != 0)
                 return false;
             return (Selection.activeObject as TextAsset) != null;
-
-
         }
 
+
+        [MenuItem("Assets/配置读取测试")]
+        public static void TestReadConfig() {
+            TextAsset asset = (Selection.activeObject as TextAsset);
+            if (asset == null)
+                return;
+            byte[] buffer = asset.bytes;
+            if (buffer == null || buffer.Length <= 0)
+                return;
+
+            string fileName = AssetDatabase.GetAssetPath(Selection.activeObject);
+            if (string.IsNullOrEmpty(fileName))
+                return;
+
+            string configName = Path.GetFileNameWithoutExtension(fileName);
+
+            ConfigConvertManager.BuildConfigConvert();
+            var info = ConfigConvertManager.GetTargetConvert(configName);
+            if (info == null)
+                return;
+
+            IDictionary map = ConfigWrap.TestCommonToObject(buffer, info.type, info.DictionaryType, true);
+            if (map != null)
+                Debug.LogError("二进制配置读取正确");
+            else
+                Debug.LogError("二进制配置读取错误");
+        } 
     }
 
 }
