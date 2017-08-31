@@ -225,7 +225,7 @@ namespace NsLib.Config {
             if (valueType == ConfigValueType.cvObject) {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
-                    ConfigBase<K> config = iter.Current.Value as ConfigBase<K>;
+                    IConfigBase config = iter.Current.Value as IConfigBase;
                     Stream stream = config.stream;
                     stream.Seek(config.dataOffset, SeekOrigin.Begin);
                     config.ReadValue();
@@ -237,7 +237,7 @@ namespace NsLib.Config {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
                     IList vs = iter.Current.Value as IList;
-                    ConfigBase<K> v = vs[0] as ConfigBase<K>;
+                    IConfigBase v = vs [0] as IConfigBase;
                     Stream stream = v.stream;
                     stream.Seek(v.dataOffset, SeekOrigin.Begin);
                     for (int i = 0; i < vs.Count; ++i) {

@@ -55,6 +55,7 @@
      <Compile Include="Assets\Scripts\LitJson\JsonWriter.cs" />
      <Compile Include="Assets\Scripts\LitJson\Lexer.cs" />
      <Compile Include="Assets\Scripts\LitJson\ParserToken.cs" />
+     <Compile Include="Assets\Scripts\Monster.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigAttribute.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigBase.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigConvertAttribute.cs" />
@@ -68,6 +69,7 @@
      <Compile Include="Assets\Scripts\Util\FilePathMgr.cs" />
      <Compile Include="Assets\Scripts\Util\Singleton.cs" />
      <None Include="Assets\Resources\TaskTalkCfg.txt" />
+     <None Include="Assets\Resources\NpcCfg.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

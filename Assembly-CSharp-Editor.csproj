@@ -47,6 +47,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\NsConfigLib\Editor\ConfigAssetImporter.cs" />
      <None Include="Assets\Resources\TaskTalkCfg.txt" />
+     <None Include="Assets\Resources\NpcCfg.txt" />
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Advertisements/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>
