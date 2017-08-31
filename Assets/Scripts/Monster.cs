@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using NsLib.Config;
 
 [ConfigConvert("NpcCfg",
-    typeof(Dictionary<string, MapMonsterVO>))]
+    typeof(Dictionary<string, MapMonsterVO>),
+    "NpcCfg_Binary")]
 [Serializable]
 public class MapMonsterVO : ConfigStringKey, ICloneable {
     public Object Clone()  //实现ICloneable接口，达到浅表复制。浅表复制与深度复制无直接有关系。 对外提供一个创建自身的浅表副本的能力  

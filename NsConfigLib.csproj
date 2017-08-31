@@ -94,6 +94,7 @@
     <Compile Include="Assets\Scripts\Util\Singleton.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Resources\NpcCfg.txt" />
     <None Include="Assets\Resources\TaskTalkCfg.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -111,6 +111,7 @@
     <Compile Include="Assets\Scripts\NsConfigLib\Editor\ConfigAssetImporter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Resources\NpcCfg.txt" />
     <None Include="Assets\Resources\TaskTalkCfg.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
