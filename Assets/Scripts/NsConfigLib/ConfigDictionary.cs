@@ -16,9 +16,32 @@ namespace NsLib.Config {
             return ToWrap<K, V>(asset.bytes, out isJson, isLoadAll);
         }
 
+        // 因为List<T>里获得T类型有一个数组分配所以建议游戏运行时，不要用这个函数
+        // 只用在测试中
+        public static Dictionary<K, V> TestToWrap<K, V>(byte[] buffer, 
+            out bool isJson, bool isLoadAll = false,
+            UnityEngine.MonoBehaviour loadAllCortine = null) where V:class {
+            isJson = false;
+            if (buffer == null || buffer.Length <= 0)
+                return null;
+
+            Dictionary<K, V> ret = ConfigWrap.TestCommonToObject<K, V>(buffer, isLoadAll, loadAllCortine);
+            if (ret == null) {
+                try {
+                    string text = System.Text.Encoding.UTF8.GetString(buffer);
+                    ret = JsonMapper.ToObject<Dictionary<K, V>>(text);
+                    isJson = true;
+                } catch {
+                    ret = null;
+                }
+            }
+
+            return ret;
+        }
+
         public static Dictionary<K, V> ToWrap<K, V>(byte[] buffer, out bool isJson, bool isLoadAll = false) where V : ConfigBase<K> {
             isJson = false;
-            if (buffer == null)
+            if (buffer == null || buffer.Length <= 0)
                 return null;
 
             Dictionary<K, V> ret = ConfigWrap.ToObject<K, V>(buffer, isLoadAll);

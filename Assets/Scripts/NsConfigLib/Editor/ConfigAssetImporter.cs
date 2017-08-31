@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections;
 using System.IO;
 using System.Reflection;
+using System;
 
 namespace NsLib.Config
 {
@@ -70,6 +71,22 @@ namespace NsLib.Config
         [MenuItem("Tools/测试配合转换表生成")]
         public static void TestBuildConfigConvertMap() {
             ConfigConvertManager.BuildConfigConvert();
+        }
+
+        [MenuItem("Assets/配置读取测试", true)]
+        public bool IsCanReadConfig() {
+            var selectObj = Selection.activeObject;
+            if (selectObj == null)
+                return false;
+            string fileName = AssetDatabase.GetAssetPath(selectObj);
+            if (string.IsNullOrEmpty(fileName))
+                return false;
+            string ext = Path.GetExtension(fileName);
+            if (string.Compare(ext, ".txt", true) != 0)
+                return false;
+            return (Selection.activeObject as TextAsset) != null;
+
+
         }
 
     }
