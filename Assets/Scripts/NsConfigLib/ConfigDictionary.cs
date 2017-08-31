@@ -16,6 +16,7 @@ namespace NsLib.Config {
             return ToWrap<K, V>(asset.bytes, out isJson, isLoadAll);
         }
 
+        #if UNITY_EDITOR
         // 因为List<T>里获得T类型有一个数组分配所以建议游戏运行时，不要用这个函数
         // 只用在测试中
         public static Dictionary<K, V> TestToWrap<K, V>(byte[] buffer, 
@@ -38,6 +39,7 @@ namespace NsLib.Config {
 
             return ret;
         }
+        #endif
 
         public static Dictionary<K, V> ToWrap<K, V>(byte[] buffer, out bool isJson, bool isLoadAll = false) where V : ConfigBase<K> {
             isJson = false;
