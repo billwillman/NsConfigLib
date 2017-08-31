@@ -266,6 +266,8 @@ namespace NsLib.Config {
             }
 
             public void Dispose() {
+                if (Iteror == null)
+                    return;
                 Iteror.Dispose();
             }
             public bool MoveNext() {
