@@ -82,7 +82,7 @@ namespace NsLib.Config
             if (string.IsNullOrEmpty(fileName))
                 return false;
             string ext = Path.GetExtension(fileName);
-            if (string.Compare(ext, ".txt", true) != 0)
+            if (string.Compare(ext, ".bytes", true) != 0)
                 return false;
             return (Selection.activeObject as TextAsset) != null;
         }
@@ -96,13 +96,13 @@ namespace NsLib.Config
             byte[] buffer = asset.bytes;
             if (buffer == null || buffer.Length <= 0)
                 return;
-
+            
             string fileName = AssetDatabase.GetAssetPath(Selection.activeObject);
             if (string.IsNullOrEmpty(fileName))
                 return;
 
             string configName = Path.GetFileNameWithoutExtension(fileName);
-
+            
             ConfigConvertManager.BuildConfigConvert();
             var info = ConfigConvertManager.GetTargetConvert(configName);
             if (info == null)
@@ -110,7 +110,7 @@ namespace NsLib.Config
 
             IDictionary map = ConfigWrap.TestCommonToObject(buffer, info.type, info.DictionaryType, true);
             if (map != null)
-                Debug.LogError("二进制配置读取正确");
+                Debug.Log("二进制配置读取正确");
             else
                 Debug.LogError("二进制配置读取错误");
         } 
