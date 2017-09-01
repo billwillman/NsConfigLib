@@ -1,4 +1,12 @@
-﻿using System;
+﻿/*
+ * 目前只支持三种Json的Dictionary数据
+ * Dictionary<K, V> 
+ * Dictionary<K, List<V>> 
+ * Dictionary<K1, Dictionary<K2, V>>
+ */
+
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -210,6 +218,24 @@ namespace NsLib.Config {
                             v = vs[i] as IConfigBase;
                             v.ReadValue();
                         }
+                    }
+                    iter.Dispose();
+                } else if (valueType == ConfigValueType.cvMap) {
+                    // 字典类型
+                    var iter = maps.GetEnumerator();
+                    while (iter.MoveNext()) {
+                        IDictionary map = iter.Current.Value as IDictionary;
+                        var subIter = map.GetEnumerator();
+                        if (subIter.MoveNext()) {
+                            IConfigBase v = subIter.Value as IConfigBase;
+                            v.StreamSeek();
+                            v.ReadValue();
+                            while (subIter.MoveNext()) {
+                                v = subIter.Value as IConfigBase;
+                                v.ReadValue();
+                            }
+                        }
+                        subIter.DisposeIter();
                     }
                     iter.Dispose();
                 }
@@ -575,6 +601,55 @@ namespace NsLib.Config {
             if (stream == null || maps == null || mono == null)
                 return null;
             return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK));
+        }
+
+        // 转换成字典类型
+        public static Dictionary<K1, Dictionary<K2, V>> ToObjectMap<K1, K2, V>(Stream stream, bool isLoadAll = false,
+           UnityEngine.MonoBehaviour loadAllCortine = null) 
+            where V : ConfigBase<K2>  {
+
+            if (stream == null)
+                return null;
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild)
+                return null;
+
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvMap)
+                return null;
+
+            Dictionary<K1, Dictionary<K2, V>> maps = null;
+            System.Type keyType1 = typeof(K1);
+            System.Type keyType2 = typeof(K2);
+            System.Type subDictType = typeof(Dictionary<K2, V>);
+            for (uint i = 0; i < header.Count; ++i) {
+                System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
+                long dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                int DictCnt = FilePathMgr.Instance.ReadInt(stream);
+                if (maps == null)
+                    maps = new Dictionary<K1, Dictionary<K2, V>>();
+
+                Dictionary<K2, V> subMap = null;
+                for (int j = 0; j < DictCnt; ++j) {
+                    System.Object key2 = FilePathMgr.Instance.ReadObject(stream, keyType2);
+                    int subItemCnt = FilePathMgr.Instance.ReadInt(stream);
+                    for (int k = 0; k < subItemCnt; ++k) {
+                        V config = Activator.CreateInstance<V>();
+                        config.stream = stream;
+                        config.dataOffset = dataOffset;
+                        subMap[(K2)key2] = config;
+                    }
+                }
+
+                if (subMap != null && subMap.Count > 0) {
+                    maps[((K1)key1)] = subMap;
+                }
+            }
+
+            return maps;
         }
 
         public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false, 
