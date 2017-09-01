@@ -142,6 +142,12 @@ namespace NsLib.Config {
             return values != null;
         }
 
+        private static void DisposeIter(this IDictionaryEnumerator iter) {
+            IDisposable disp = iter as IDisposable;
+            if (disp != null)
+                disp.Dispose();
+        }
+
         private static UnityEngine.Coroutine StartLoadAllCortine(IDictionary maps,
             UnityEngine.MonoBehaviour parent, ConfigValueType valueType) {
             if (maps == null || maps.Count <= 0)
@@ -157,7 +163,7 @@ namespace NsLib.Config {
                         stream.Seek(config.dataOffset, SeekOrigin.Begin);
                         config.ReadValue();
                     }
-                    //iter.Dispose();
+                    iter.DisposeIter();
                 } else if (valueType == ConfigValueType.cvList) {
                     var iter = maps.GetEnumerator();
                     while (iter.MoveNext()) {
@@ -170,7 +176,7 @@ namespace NsLib.Config {
                             v.ReadValue();
                         }
                     }
-                   // iter.Dispose();
+                    iter.DisposeIter();
                 }
             }
 
@@ -246,6 +252,13 @@ namespace NsLib.Config {
                     }
                     InitEndFrame();
                     yield return m_EndFrame;
+                }
+                iter.Dispose();
+            } else if (valueType == ConfigValueType.cvMap) {
+                // 字典类型
+                var iter = maps.GetEnumerator();
+                while (iter.MoveNext()) {
+
                 }
                 iter.Dispose();
             }
@@ -513,7 +526,6 @@ namespace NsLib.Config {
                 yield break;
             }
 
-
             for (uint i = 0; i < header.Count; ++i) {
                 V config = Activator.CreateInstance<V>();
                 config.stream = stream;
@@ -630,6 +642,7 @@ namespace NsLib.Config {
                         v.dataOffset = dataOffset;
                         v.WriteValue();
                     }
+                    subIter.DisposeIter();
                 } else {
                     valueType =  ConfigValueType.cvObject;
                     IConfigBase v = iter.Value as IConfigBase;
@@ -638,6 +651,7 @@ namespace NsLib.Config {
                     v.WriteValue();
                 }
             }
+            iter.DisposeIter();
 
             long indexOffset = stream.Position;
             stream.WriteByte((byte)valueType);
@@ -656,6 +670,7 @@ namespace NsLib.Config {
                         FilePathMgr.Instance.WriteInt(stream, vs.Count);
                     }
                 }
+                iter.DisposeIter();
             } else if (valueType == ConfigValueType.cvMap) {
                 // 字典类型
                 iter = values.GetEnumerator();
@@ -673,8 +688,10 @@ namespace NsLib.Config {
                             // 数量
                             FilePathMgr.Instance.WriteInt(stream, vs.Count);
                         }
+                        subIter.DisposeIter();
                     }
                 }
+                iter.DisposeIter();
 
             } else if (valueType == ConfigValueType.cvObject) {
                 iter = values.GetEnumerator();
@@ -684,6 +701,7 @@ namespace NsLib.Config {
                     v.WriteKey(key);
                     FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
                 }
+                iter.DisposeIter();
             }
 
             // 重写Header
