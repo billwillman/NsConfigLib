@@ -608,12 +608,24 @@ namespace NsLib.Config {
             ConfigValueType valueType = ConfigValueType.cvObject;
             while (iter.MoveNext()) {
                 IList vs = iter.Value as IList;
+                IDictionary subMap = iter.Value as IDictionary;
                 if (vs != null) {
-                    // 说明是listMode
+                    // 说明是List
                     valueType = ConfigValueType.cvList;
                     long dataOffset = stream.Position;
                     for (int i = 0; i < vs.Count; ++i) {
                         IConfigBase v = vs[i] as IConfigBase;
+                        v.stream = stream;
+                        v.dataOffset = dataOffset;
+                        v.WriteValue();
+                    }
+                } else if (subMap != null) {
+                    // 字典类型
+                    valueType = ConfigValueType.cvMap;
+                    long dataOffset = stream.Position;
+                    var subIter = subMap.GetEnumerator();
+                    while (subIter.MoveNext()) {
+                        IConfigBase v = subIter.Value as IConfigBase;
                         v.stream = stream;
                         v.dataOffset = dataOffset;
                         v.WriteValue();
@@ -626,7 +638,6 @@ namespace NsLib.Config {
                     v.WriteValue();
                 }
             }
-
 
             long indexOffset = stream.Position;
             stream.WriteByte((byte)valueType);
@@ -645,6 +656,26 @@ namespace NsLib.Config {
                         FilePathMgr.Instance.WriteInt(stream, vs.Count);
                     }
                 }
+            } else if (valueType == ConfigValueType.cvMap) {
+                // 字典类型
+                iter = values.GetEnumerator();
+                while (iter.MoveNext()) {
+                    System.Object key = iter.Key;
+                    IDictionary vs = iter.Value as IDictionary;
+                    if (vs != null) {
+                        var subIter = vs.GetEnumerator();
+                        // 取出第一个
+                        if (subIter.MoveNext()) {
+                            IConfigBase v = subIter.Value as IConfigBase;
+                            v.WriteKey(key);
+                            // 偏移
+                            FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
+                            // 数量
+                            FilePathMgr.Instance.WriteInt(stream, vs.Count);
+                        }
+                    }
+                }
+
             } else if (valueType == ConfigValueType.cvObject) {
                 iter = values.GetEnumerator();
                 while (iter.MoveNext()) {
@@ -663,87 +694,10 @@ namespace NsLib.Config {
             return true;
         }
 
-        public static bool ToStream<K, V>(Stream stream, Dictionary<K, List<V>> values) where V : ConfigBase<K> {
-            if (stream == null || values == null || values.Count <= 0)
-                return false;
-
-            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
-            header.SaveToStream(stream);
-
-            
-            var iter = values.GetEnumerator();
-            while (iter.MoveNext()) {
-                List<V> vs = iter.Current.Value;
-                long dataOffset = stream.Position;
-                for (int i = 0; i < vs.Count; ++i) {
-                    V v = vs[i];
-                    v.stream = stream;
-                    v.dataOffset = dataOffset;
-                    v.WriteValue();
-                }
-            }
-            iter.Dispose();
-
-            long indexOffset = stream.Position;
-            // 是否是List
-            FilePathMgr.Instance.WriteBool(stream, true);
-            // 写入索引
-            iter = values.GetEnumerator();
-            while (iter.MoveNext()) {
-                K key = iter.Current.Key;
-                List<V> vs = iter.Current.Value;
-                vs[0].WriteKey(key);
-                // 偏移
-                FilePathMgr.Instance.WriteLong(stream, vs[0].dataOffset);
-                // 数量
-                FilePathMgr.Instance.WriteInt(stream, vs.Count);
-            }
-            iter.Dispose();
-
-            // 重写Header
-            header.indexOffset = indexOffset;
-            header.SeekFileToHeader(stream);
-            header.SaveToStream(stream);
-
-            return true;
-        }
-
         public static bool ToStream<K, V>(Stream stream, Dictionary<K, V> values) where V : ConfigBase<K> {
             if (stream == null || values == null || values.Count <= 0)
                 return false;
-
-            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
-            header.SaveToStream(stream);
-
-            var iter = values.GetEnumerator();
-            while (iter.MoveNext()) {
-                V v = iter.Current.Value;
-                v.stream = stream;
-                v.dataOffset = stream.Position;
-                v.WriteValue();
-            }
-            iter.Dispose();
-
-            long indexOffset = stream.Position;
-
-            // 是否是List
-            FilePathMgr.Instance.WriteBool(stream, false);
-            // 写入索引
-            iter = values.GetEnumerator();
-            while (iter.MoveNext()) {
-                K key = iter.Current.Key;
-                V v = iter.Current.Value;
-                v.WriteKey(key);
-                FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
-            }
-            iter.Dispose();
-
-            // 重写Header
-            header.indexOffset = indexOffset;
-            header.SeekFileToHeader(stream);
-            header.SaveToStream(stream);
-
-            return true;
+            return ToStream(stream, values);
         }
 
 
