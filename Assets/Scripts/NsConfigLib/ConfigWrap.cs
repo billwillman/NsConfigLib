@@ -634,13 +634,21 @@ namespace NsLib.Config {
 
                 Dictionary<K2, V> subMap = null;
                 for (int j = 0; j < DictCnt; ++j) {
-                    System.Object key2 = FilePathMgr.Instance.ReadObject(stream, keyType2);
                     int subItemCnt = FilePathMgr.Instance.ReadInt(stream);
-                    for (int k = 0; k < subItemCnt; ++k) {
+                    if (subItemCnt > 0) {
                         V config = Activator.CreateInstance<V>();
                         config.stream = stream;
                         config.dataOffset = dataOffset;
+                        K2 key2 = config.ReadKey();
                         subMap[(K2)key2] = config;
+
+                        for (int k = 1; k < subItemCnt; ++k) {
+                            config = Activator.CreateInstance<V>();
+                            config.stream = stream;
+                            config.dataOffset = dataOffset;
+                            key2 = config.ReadKey();
+                            subMap[(K2)key2] = config;
+                        }
                     }
                 }
 
