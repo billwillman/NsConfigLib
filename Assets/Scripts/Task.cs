@@ -68,3 +68,55 @@ public class TaskTalkCfg : ConfigStringKey {
         set;
     }
 }
+
+[ConfigConvert("TaskStepCfg", 
+    typeof(Dictionary<string, Dictionary<string, TaskStepVO>>),
+    "TaskStepCfg_Binary")]
+
+public class TaskStepVO: ConfigStringKey {
+    [ConfigId(0)]
+    public int id { set; get; }
+    [ConfigId(1)]
+    public int stepId { set; get; }
+    [ConfigId(2)]
+    public int type { set; get; }
+    [ConfigId(3)]
+    public bool autoRun { set; get; }
+    [ConfigId(4)]
+    public int para1 { set; get; }
+    [ConfigId(5)]
+    public int para2 { set; get; }
+    [ConfigId(6)]
+    public int para3 { set; get; }
+    [ConfigId(7)]
+    public int para4 { set; get; }
+    [ConfigId(8)]
+    public int para5 { set; get; }
+    [ConfigId(9)]
+    public string para6 { set; get; }
+    [ConfigId(10)]
+    public string para7 { set; get; }
+    [ConfigId(11)]
+    public int limitTime { set; get; }
+    [ConfigId(12)]
+    public string intro { set; get; }
+    [ConfigId(13)]
+    public string trackIntro { set; get; }
+    [ConfigId(14)]
+    public int sendItemId { set; get; }
+    [ConfigId(15)]
+    public int sendItemNum { set; get; }
+    [ConfigId(16)]
+    public int recycleItemId { set; get; }
+    [ConfigId(17)]
+    public int recycleItemNum { set; get; }
+    [ConfigId(18)]
+    public int objectNpc { set; get; }
+    public bool isNpcTask {
+        get {
+            return objectNpc > 0;
+        }
+    }
+    [ConfigId(19)]
+    public string gossip { set; get; }
+}
