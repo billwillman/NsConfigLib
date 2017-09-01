@@ -438,6 +438,41 @@ namespace NsLib.Config {
                         }
                         break;
                     }
+
+                case ConfigValueType.cvMap: {
+                        Type[] vTypes = dictType.GetInterfaces();
+                        if (vTypes == null || vTypes.Length < 2)
+                            return null;
+                        Type k1 = vTypes[0];
+                        if (k1 == null)
+                            return null;
+
+                        Type vType = vTypes[1];
+                        if (vType == null)
+                            return null;
+
+                        if (!vType.IsSubclassOf(typeof(IDictionary)))
+                            return null;
+
+                        Type[] subTypes = vType.GetInterfaces();
+                        if (subTypes == null || subTypes.Length < 2)
+                            return null;
+
+                        Type k2 = subTypes[0];
+                        Type v = subTypes[1];
+                        if (k2 == null || v == null)
+                            return null;
+
+                        var subDictType = typeof(Dictionary<System.Object, System.Object>).MakeGenericType(k2, v);
+                        if (subDictType == null)
+                            return null;
+
+                        for (uint i = 0; i < header.Count; ++i) {
+
+                        }
+
+                        break;
+                    }
                 default:
                     return null;
             }

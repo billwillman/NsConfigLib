@@ -72,7 +72,6 @@ public class TaskTalkCfg : ConfigStringKey {
 [ConfigConvert("TaskStepCfg", 
     typeof(Dictionary<string, Dictionary<string, TaskStepVO>>),
     "TaskStepCfg_Binary")]
-
 public class TaskStepVO: ConfigStringKey {
     [ConfigId(0)]
     public int id { set; get; }
