@@ -60,14 +60,24 @@ public class TestListConfig: MonoBehaviour {
 
             if (GUI.Button (new Rect (550, 150, 150, 50), "二进制异步全读取")) {
                 m_Stream = new MemoryStream (m_Binary.bytes);
-                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg> (m_Stream, m_TaskDict, this, true);
+                m_StartTime = Time.realtimeSinceStartup;
+                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg> (m_Stream, 
+                    m_TaskDict, this, true, OnReadEnd);
             }
 
             if (GUI.Button (new Rect (700, 150, 150, 50), "二进制异步非全读取")) {
                 m_Stream = new MemoryStream (m_Binary.bytes);
-                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg> (m_Stream, m_TaskDict, this, false);
+                m_StartTime = Time.realtimeSinceStartup;
+                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg> (m_Stream, 
+                    m_TaskDict, this, false, OnReadEnd);
             }
         }
+    }
+
+    private float m_StartTime = 0f;
+    private void OnReadEnd(IDictionary map) {
+        float delta = Time.realtimeSinceStartup - m_StartTime;
+        Debug.LogFormat("异步读取完成消耗：{0}", delta.ToString());
     }
 
   
