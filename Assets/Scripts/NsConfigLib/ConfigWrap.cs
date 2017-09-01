@@ -697,7 +697,8 @@ namespace NsLib.Config {
         public static bool ToStream<K, V>(Stream stream, Dictionary<K, V> values) where V : ConfigBase<K> {
             if (stream == null || values == null || values.Count <= 0)
                 return false;
-            return ToStream(stream, values);
+            IDictionary map = values as IDictionary;
+            return ToStream(stream, map);
         }
 
 
