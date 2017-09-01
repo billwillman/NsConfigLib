@@ -232,8 +232,7 @@ namespace NsLib.Config {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
                     IConfigBase config = iter.Current.Value as IConfigBase;
-                    Stream stream = config.stream;
-                    stream.Seek(config.dataOffset, SeekOrigin.Begin);
+                    config.StreamSeek();
                     config.ReadValue();
                     InitEndFrame();
                     yield return m_EndFrame;
@@ -244,8 +243,7 @@ namespace NsLib.Config {
                 while (iter.MoveNext()) {
                     IList vs = iter.Current.Value as IList;
                     IConfigBase v = vs [0] as IConfigBase;
-                    Stream stream = v.stream;
-                    stream.Seek(v.dataOffset, SeekOrigin.Begin);
+                    v.StreamSeek();
                     for (int i = 0; i < vs.Count; ++i) {
                         v = vs[i] as IConfigBase;
                         v.ReadValue();
@@ -258,7 +256,21 @@ namespace NsLib.Config {
                 // 字典类型
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
+                    IDictionary map = iter.Current.Value as IDictionary;
+                    var subIter = map.GetEnumerator();
+                    if (subIter.MoveNext()) {
+                        IConfigBase v = subIter.Value as IConfigBase;
+                        v.StreamSeek();
+                        v.ReadValue();
+                        while (subIter.MoveNext()) {
+                            v = subIter.Value as IConfigBase;
+                            v.ReadValue();
+                        }
+                    }
+                    subIter.DisposeIter();
 
+                    InitEndFrame();
+                    yield return m_EndFrame;
                 }
                 iter.Dispose();
             }
