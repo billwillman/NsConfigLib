@@ -196,7 +196,7 @@ namespace NsLib.Config {
             if (maps == null || maps.Count <= 0)
                 return null;
             if (parent != null) {
-                return parent.StartCoroutine(StartLoadCortine<K, V>(maps, valueType));
+                return parent.StartCoroutine(StartLoadCortine(maps, valueType));
             } else {
                 if (valueType == ConfigValueType.cvObject) {
                     var iter = maps.GetEnumerator();
@@ -249,25 +249,25 @@ namespace NsLib.Config {
             if (m_EndFrame == null)
                 m_EndFrame = new UnityEngine.WaitForEndOfFrame();
         }
-        private static IEnumerator StartLoadCortine<K, V>(Dictionary<K, V> maps,
-            ConfigValueType valueType) where V : class {
+        private static IEnumerator StartLoadCortine(IDictionary maps,
+            ConfigValueType valueType) {
             if (maps == null || maps.Count <= 0)
                 yield break;
 
             if (valueType == ConfigValueType.cvObject) {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
-                    IConfigBase config = iter.Current.Value as IConfigBase;
+                    IConfigBase config = iter.Value as IConfigBase;
                     config.StreamSeek();
                     config.ReadValue();
                     InitEndFrame();
                     yield return m_EndFrame;
                 }
-                iter.Dispose();
+                iter.DisposeIter();
             } else if (valueType == ConfigValueType.cvList) {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
-                    IList vs = iter.Current.Value as IList;
+                    IList vs = iter.Value as IList;
                     IConfigBase v = vs [0] as IConfigBase;
                     v.StreamSeek();
                     for (int i = 0; i < vs.Count; ++i) {
@@ -277,12 +277,12 @@ namespace NsLib.Config {
                     InitEndFrame();
                     yield return m_EndFrame;
                 }
-                iter.Dispose();
+                iter.DisposeIter();
             } else if (valueType == ConfigValueType.cvMap) {
                 // 字典类型
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
-                    IDictionary map = iter.Current.Value as IDictionary;
+                    IDictionary map = iter.Value as IDictionary;
                     var subIter = map.GetEnumerator();
                     if (subIter.MoveNext()) {
                         IConfigBase v = subIter.Value as IConfigBase;
@@ -298,7 +298,7 @@ namespace NsLib.Config {
                     InitEndFrame();
                     yield return m_EndFrame;
                 }
-                iter.Dispose();
+                iter.DisposeIter();
             }
         }
 
@@ -336,7 +336,7 @@ namespace NsLib.Config {
                 yield return m_EndFrame;
             }
 
-            yield return StartLoadCortine<K, V>(maps, valueType);
+            yield return StartLoadCortine(maps, valueType);
 
             if (onOK != null)
                 onOK(maps);
@@ -587,7 +587,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps.Count > 0) {
-                yield return StartLoadCortine<K, List<V>>(maps, valueType) ;
+                yield return StartLoadCortine(maps, valueType) ;
             }
 
             if (onOK != null)
@@ -602,6 +602,84 @@ namespace NsLib.Config {
                 return null;
             return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK));
         }
+
+        private static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
+            Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
+            Action<IDictionary> onOK = null) where V : ConfigBase<K2> {
+            if (stream == null || maps == null || mono == null)
+                return null;
+            return mono.StartCoroutine(_ToObjectMapAsync<K1, K2, V>(stream, maps, isLoadAll, onOK));
+        }
+
+        private static IEnumerator _ToObjectMapAsync<K1, K2, V>(Stream stream,
+            Dictionary<K1, Dictionary<K2, V>> maps, bool isLoadAll = false,
+            Action<IDictionary> onOK = null) where V : ConfigBase<K2> {
+            if (stream == null || maps == null) {
+                yield break;
+            }
+
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild) {
+                yield break;
+            }
+
+            maps.Clear();
+
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvMap) {
+                yield break;
+            }
+
+            System.Type keyType1 = typeof(K1);
+            System.Type keyType2 = typeof(K2);
+            System.Type subDictType = typeof(Dictionary<K2, V>);
+            for (uint i = 0; i < header.Count; ++i) {
+                System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
+                long dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                int DictCnt = FilePathMgr.Instance.ReadInt(stream);
+                if (maps == null)
+                    maps = new Dictionary<K1, Dictionary<K2, V>>();
+
+                Dictionary<K2, V> subMap = null;
+                for (int j = 0; j < DictCnt; ++j) {
+                    int subItemCnt = FilePathMgr.Instance.ReadInt(stream);
+                    if (subItemCnt > 0) {
+                        V config = Activator.CreateInstance<V>();
+                        config.stream = stream;
+                        config.dataOffset = dataOffset;
+                        K2 key2 = config.ReadKey();
+                        subMap[(K2)key2] = config;
+
+                        for (int k = 1; k < subItemCnt; ++k) {
+                            config = Activator.CreateInstance<V>();
+                            config.stream = stream;
+                            config.dataOffset = dataOffset;
+                            key2 = config.ReadKey();
+                            subMap[(K2)key2] = config;
+                        }
+
+                        InitEndFrame();
+                        yield return m_EndFrame;
+                    }
+                }
+
+                if (subMap != null && subMap.Count > 0) {
+                    maps[((K1)key1)] = subMap;
+                }
+            }
+
+            if (isLoadAll && maps.Count > 0) {
+                yield return StartLoadCortine(maps, valueType);
+            }
+
+            if (onOK != null)
+                onOK(maps);
+
+        }
+
 
         // 转换成字典类型
         public static Dictionary<K1, Dictionary<K2, V>> ToObjectMap<K1, K2, V>(Stream stream, bool isLoadAll = false,
@@ -739,6 +817,7 @@ namespace NsLib.Config {
                     }
                     subIter.DisposeIter();
                 } else {
+                    // 普通对象类型
                     valueType =  ConfigValueType.cvObject;
                     IConfigBase v = iter.Value as IConfigBase;
                     v.stream = stream;
