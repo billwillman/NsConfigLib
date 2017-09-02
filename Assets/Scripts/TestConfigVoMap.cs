@@ -46,5 +46,12 @@ public class TestConfigVoMap : MonoBehaviour {
                 JsonMapper.ToObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
             }
         }
+
+        if (GUI.Button(new Rect(250, 150, 150, 50), "FastJson加载")) {
+            TextAsset asset = Resources.Load<TextAsset>("TaskStepCfg");
+            if (asset != null) {
+                fastJSON.JSON.ToObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
+            }
+        }
     }
 }
