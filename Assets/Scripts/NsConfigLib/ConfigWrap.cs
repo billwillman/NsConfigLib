@@ -41,7 +41,7 @@ namespace NsLib.Config {
 
         // 首次读取
         public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false,
-            UnityEngine.MonoBehaviour loadAllCortine = null, int maxAsynReadCnt = 700) where V : ConfigBase<K> {
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsynReadCnt = 700) where V : ConfigBase<K> {
             if (stream == null)
                 return null;
             ConfigFileHeader header = new ConfigFileHeader();
@@ -67,7 +67,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps != null && maps.Count > 0) {
-                StartLoadAllCortine(maps, loadAllCortine, valueType, maxAsynReadCnt);
+                StartLoadAllCortine(maps, loadAllCortine, valueType, onProcess, maxAsynReadCnt);
             }
 
             return maps;
@@ -157,11 +157,11 @@ namespace NsLib.Config {
         }
 
         private static UnityEngine.Coroutine StartLoadAllCortine(IDictionary maps,
-            UnityEngine.MonoBehaviour parent, ConfigValueType valueType, int maxAsyncReadCnt) {
+            UnityEngine.MonoBehaviour parent, ConfigValueType valueType, Action<float> onProcess, int maxAsyncReadCnt) {
             if (maps == null || maps.Count <= 0)
                 return null;
             if (parent != null) {
-                return parent.StartCoroutine(StartLoadCortine(maps, valueType, maxAsyncReadCnt));
+                return parent.StartCoroutine(StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt));
             } else {
                 if (valueType == ConfigValueType.cvObject) {
                     var iter = maps.GetEnumerator();
@@ -216,17 +216,24 @@ namespace NsLib.Config {
         }
 
         private static IEnumerator StartLoadCortine(IDictionary maps,
-            ConfigValueType valueType, int maxAsyncReadCnt) {
+            ConfigValueType valueType, Action<float> onProcess, int maxAsyncReadCnt) {
             if (maps == null || maps.Count <= 0)
                 yield break;
 
             int curCnt = 0;
+            int idx = 0;
             if (valueType == ConfigValueType.cvObject) {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
                     IConfigBase config = iter.Value as IConfigBase;
                     config.StreamSeek();
                     config.ReadValue();
+
+                    if (onProcess != null) {
+                        ++idx;
+                        float process = 0.5f + (float)idx / (float)maps.Count;
+                        onProcess (process);
+                    }
 
                     ++curCnt;
                     if (curCnt >= maxAsyncReadCnt) {
@@ -252,6 +259,12 @@ namespace NsLib.Config {
                             InitEndFrame();
                             yield return m_EndFrame;
                         }
+                    }
+
+                    if (onProcess != null) {
+                        ++idx;
+                        float process = 0.5f + (float)idx / (float)maps.Count;
+                        onProcess (process);
                     }
                     
                 }
@@ -279,6 +292,13 @@ namespace NsLib.Config {
                         }
                     }
                     subIter.DisposeIter();
+
+                    if (onProcess != null) {
+                        ++idx;
+                        float process = 0.5f + (float)idx / (float)maps.Count;
+                        onProcess (process);
+                    }
+
                 }
                 iter.DisposeIter();
             }
@@ -286,7 +306,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps,
             bool isLoadAll = false,
-            Action<IDictionary> onOK = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K> {
             if (stream == null || maps == null) {
                 yield break;
             }
@@ -322,7 +342,7 @@ namespace NsLib.Config {
                 }
             }
 
-            yield return StartLoadCortine(maps, valueType, maxAsyncReadCnt);
+            yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
 
             if (onOK != null)
                 onOK(maps);
@@ -478,7 +498,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps != null && maps.Count > 0) {
-                StartLoadAllCortine(maps, loadAllCortine, valueType, maxAsyncReadCnt);
+                StartLoadAllCortine(maps, loadAllCortine, valueType, null, maxAsyncReadCnt);
             }
 
             return maps;
@@ -555,7 +575,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps != null && maps.Count > 0) {
-                StartLoadAllCortine(maps, loadAllCortine, valueType, maxAsyncReadCnt);
+                StartLoadAllCortine(maps, loadAllCortine, valueType, null, maxAsyncReadCnt);
             }
 
             return maps;
@@ -564,7 +584,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
             Dictionary<K, List<V>> maps, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K>
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K>
         {
 
             if (stream == null || maps == null) {
@@ -612,11 +632,17 @@ namespace NsLib.Config {
                         yield return m_EndFrame;
                     }
                 }
+
+                if (onProcess != null) {
+                    float delta = isLoadAll ? 0.5f : 1f;
+                    float process = ((float)i / (float)header.Count) * delta;
+                    onProcess (process);
+                }
                 
             }
 
             if (isLoadAll && maps.Count > 0) {
-                yield return StartLoadCortine(maps, valueType, maxAsyncReadCnt) ;
+                yield return StartLoadCortine(maps, valueType,  onProcess, maxAsyncReadCnt) ;
             }
 
             if (onOK != null)
@@ -625,24 +651,24 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectListAsync<K, V>(Stream stream,
             Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K>
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K>
         {
             if (stream == null || maps == null || mono == null)
                 return null;
-            return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK, maxAsyncReadCnt));
+            return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
         }
 
         private static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
             if (stream == null || maps == null || mono == null)
                 return null;
-            return mono.StartCoroutine(_ToObjectMapAsync<K1, K2, V>(stream, maps, isLoadAll, onOK, maxAsyncReadCnt));
+            return mono.StartCoroutine(_ToObjectMapAsync<K1, K2, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
         }
 
         private static IEnumerator _ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
             if (stream == null || maps == null) {
                 yield break;
             }
@@ -705,7 +731,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps.Count > 0) {
-                yield return StartLoadCortine(maps, valueType, maxAsyncReadCnt);
+                yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
             }
 
             if (onOK != null)
@@ -772,7 +798,7 @@ namespace NsLib.Config {
         }
 
         public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false, 
-            UnityEngine.MonoBehaviour loadAllCortine = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K> {
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K> {
 
             if (stream == null)
                 return null;
@@ -808,7 +834,7 @@ namespace NsLib.Config {
             }
 
             if (isLoadAll && maps != null && maps.Count > 0) {
-                StartLoadAllCortine(maps, loadAllCortine, valueType, maxAsyncReadCnt);
+                StartLoadAllCortine(maps, loadAllCortine, valueType, onProcess, maxAsyncReadCnt);
             }
 
 
