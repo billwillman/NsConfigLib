@@ -350,11 +350,11 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectAsync<K, V>(Stream stream,
             Dictionary<K, V> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOk = null) where V : ConfigBase<K> {
+            Action<IDictionary> onOk = null, Action<float> onProcess = null) where V : ConfigBase<K> {
             if (stream == null || maps == null || mono == null)
                 return null;
 
-            return mono.StartCoroutine(_ToObjectAsync<K, V>(stream, maps, isLoadAll, onOk));
+            return mono.StartCoroutine(_ToObjectAsync<K, V>(stream, maps, isLoadAll, onOk, onProcess));
         }
 
         public static bool GetConfigValueType(Stream stream, out ConfigValueType valueType) {
@@ -658,7 +658,7 @@ namespace NsLib.Config {
             return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
         }
 
-        private static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
+        public static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
             Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
             if (stream == null || maps == null || mono == null)
@@ -737,6 +737,22 @@ namespace NsLib.Config {
             if (onOK != null)
                 onOK(maps);
 
+        }
+
+        public static Dictionary<K1, Dictionary<K2, V>> ToObjectMap<K1, K2, V>(byte[] buffer, bool isLoadAll = false,
+           UnityEngine.MonoBehaviour loadAllCortine = null)
+            where V : ConfigBase<K2> {
+            Dictionary<K1, Dictionary<K2, V>> ret = null;
+            if (buffer == null || buffer.Length <= 0)
+                return ret;
+            MemoryStream stream = new MemoryStream(buffer);
+            ret = ToObjectMap<K1, K2, V>(stream, isLoadAll, loadAllCortine);
+            if (ret == null) {
+                stream.Close();
+                stream.Dispose();
+            }
+
+            return ret;
         }
 
 
