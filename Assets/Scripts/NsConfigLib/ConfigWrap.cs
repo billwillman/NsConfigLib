@@ -41,7 +41,7 @@ namespace NsLib.Config {
 
         // 首次读取
         public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false,
-            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsynReadCnt = 700) where V : ConfigBase<K> {
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsynReadCnt = 500) where V : ConfigBase<K> {
             if (stream == null)
                 return null;
             ConfigFileHeader header = new ConfigFileHeader();
@@ -346,7 +346,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps,
             bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K> {
             if (stream == null || maps == null) {
                 yield break;
             }
@@ -390,11 +390,11 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectAsync<K, V>(Stream stream,
             Dictionary<K, V> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOk = null, Action<float> onProcess = null) where V : ConfigBase<K> {
+            Action<IDictionary> onOk = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K> {
             if (stream == null || maps == null || mono == null)
                 return null;
 
-            return mono.StartCoroutine(_ToObjectAsync<K, V>(stream, maps, isLoadAll, onOk, onProcess));
+            return mono.StartCoroutine(_ToObjectAsync<K, V>(stream, maps, isLoadAll, onOk, onProcess, maxAsyncReadCnt));
         }
 
         public static bool GetConfigValueType(Stream stream, out ConfigValueType valueType) {
@@ -447,7 +447,7 @@ namespace NsLib.Config {
 
         public static IDictionary TestCommonToObject(Stream stream, System.Type configType,
             System.Type dictType, bool isLoadAll = false,
-            UnityEngine.MonoBehaviour loadAllCortine = null, int maxAsyncReadCnt = 700) {
+            UnityEngine.MonoBehaviour loadAllCortine = null, int maxAsyncReadCnt = 500) {
             if (stream == null || configType == null || dictType == null)
                 return null;
 
@@ -499,6 +499,7 @@ namespace NsLib.Config {
                         break;
                     }
 
+                    // 有问题
                 case ConfigValueType.cvMap: {
                         Type[] vTypes = dictType.GetInterfaces();
                         if (vTypes == null || vTypes.Length < 2)
@@ -548,7 +549,7 @@ namespace NsLib.Config {
         public static Dictionary<K, V> TestCommonToObject<K, V>(Stream stream,
             bool isLoadAll = false,
             UnityEngine.MonoBehaviour loadAllCortine = null,
-            int maxAsyncReadCnt = 700) where V: class {
+            int maxAsyncReadCnt = 500) where V: class {
 
             if (stream == null)
                 return null;
@@ -624,7 +625,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
             Dictionary<K, List<V>> maps, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K>
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>
         {
 
             if (stream == null || maps == null) {
@@ -691,7 +692,8 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectListAsync<K, V>(Stream stream,
             Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K>
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, 
+            int maxAsyncReadCnt = 500) where V : ConfigBase<K>
         {
             if (stream == null || maps == null || mono == null)
                 return null;
@@ -700,7 +702,7 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2> {
             if (stream == null || maps == null || mono == null)
                 return null;
             return mono.StartCoroutine(_ToObjectMapAsync<K1, K2, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
@@ -708,7 +710,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K2> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2> {
             if (stream == null || maps == null) {
                 yield break;
             }
@@ -854,7 +856,7 @@ namespace NsLib.Config {
         }
 
         public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false, 
-            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsyncReadCnt = 700) where V : ConfigBase<K> {
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K> {
 
             if (stream == null)
                 return null;
