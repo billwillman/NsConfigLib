@@ -3,6 +3,7 @@ using System.Collections;
 using NsLib.Config;
 using LitJson;
 using System.Collections.Generic;
+using System.Net.Json;
 
 public class TestConfigVoMap : MonoBehaviour {
 
@@ -53,5 +54,22 @@ public class TestConfigVoMap : MonoBehaviour {
                 fastJSON.JSON.ToObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
             }
         }
+
+        if (GUI.Button(new Rect(400, 150, 150, 50), "System.Net.Json测试")) {
+            
+            TextAsset asset = Resources.Load<TextAsset>("TaskStepCfg");
+            if (asset != null) {
+                JsonTextParser parser = new JsonTextParser();
+                parser.Parse(asset.text);
+            }
+        }
+
+        if (GUI.Button(new Rect(550, 150, 150, 50), "Newtonsoft.Json测试")) {
+            TextAsset asset = Resources.Load<TextAsset>("TaskStepCfg");
+            if (asset != null) {
+                Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
+            }
+        }
+            
     }
 }
