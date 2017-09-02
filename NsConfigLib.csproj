@@ -58,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -72,6 +66,12 @@
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Json">
+      <HintPath>Assets\Plugins\System.Net.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Assets\Plugins\JsonDotNet\Standalone\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +110,10 @@
     <Compile Include="Assets\Scripts\fastJson\fastJSON\dynamic.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\JsonDotNet\Assemblies\Windows\Newtonsoft.Json.XML" />
+    <None Include="Assets\JsonDotNet\link.xml" />
+    <None Include="Assets\Plugins\JsonDotNet\AOT\Newtonsoft.Json.XML" />
+    <None Include="Assets\Plugins\JsonDotNet\Standalone\Newtonsoft.Json.XML" />
     <None Include="Assets\Resources\NpcCfg.txt" />
     <None Include="Assets\Resources\TaskStepCfg.txt" />
     <None Include="Assets\Resources\TaskTalkCfg.txt" />

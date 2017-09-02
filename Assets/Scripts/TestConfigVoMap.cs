@@ -19,7 +19,8 @@ public class TestConfigVoMap : MonoBehaviour {
             TextAsset asset = Resources.Load<TextAsset>("TaskStepCfg_Binary");
             if (asset != null) {
                 ConfigVoMapMap<string, string, TaskStepVO> maps = new ConfigVoMapMap<string, string, TaskStepVO>();
-                maps.LoadFromTextAsset(asset, true);
+                maps.LoadFromTe
+                    xtAsset(asset, true);
             }
         }
 
