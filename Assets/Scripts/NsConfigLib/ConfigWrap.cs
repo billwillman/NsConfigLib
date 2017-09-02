@@ -730,6 +730,7 @@ namespace NsLib.Config {
                 yield break;
             }
 
+            int curCnt = 0;
             System.Type keyType1 = typeof(K1);
             System.Type keyType2 = typeof(K2);
             System.Type subDictType = typeof(Dictionary<K2, V>);
@@ -737,38 +738,27 @@ namespace NsLib.Config {
                 System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
                 long dataOffset = FilePathMgr.Instance.ReadLong(stream);
                 int DictCnt = FilePathMgr.Instance.ReadInt(stream);
-                if (maps == null)
-                    maps = new Dictionary<K1, Dictionary<K2, V>>();
-
-                int curCnt = 0;
-                Dictionary<K2, V> subMap = null;
-                for (int j = 0; j < DictCnt; ++j) {
-                    int subItemCnt = FilePathMgr.Instance.ReadInt(stream);
-                    if (subItemCnt > 0) {
+                if (DictCnt > 0) {
+                    Dictionary<K2, V> subMap = new Dictionary<K2, V>();
+                    for (int j = 0; j < DictCnt; ++j) {
                         V config = Activator.CreateInstance<V>();
                         config.stream = stream;
                         config.dataOffset = dataOffset;
                         K2 key2 = config.ReadKey();
                         subMap[(K2)key2] = config;
 
-                        for (int k = 1; k < subItemCnt; ++k) {
-                            config = Activator.CreateInstance<V>();
-                            config.stream = stream;
-                            config.dataOffset = dataOffset;
-                            key2 = config.ReadKey();
-                            subMap[(K2)key2] = config;
-                            ++curCnt;
-                            if (curCnt >= maxAsyncReadCnt) {
-                                curCnt = 0;
-                                InitEndFrame();
-                                yield return m_EndFrame;
-                            }
+                        ++curCnt;
+                        if (curCnt >= maxAsyncReadCnt) {
+                            curCnt = 0;
+                            InitEndFrame();
+                            yield return m_EndFrame;
                         }
                     }
-                }
 
-                if (subMap != null && subMap.Count > 0) {
-                    maps[((K1)key1)] = subMap;
+
+                    if (subMap != null && subMap.Count > 0) {
+                        maps[((K1)key1)] = subMap;
+                    }
                 }
             }
 
@@ -800,7 +790,8 @@ namespace NsLib.Config {
 
         // 转换成字典类型
         public static Dictionary<K1, Dictionary<K2, V>> ToObjectMap<K1, K2, V>(Stream stream, bool isLoadAll = false,
-           UnityEngine.MonoBehaviour loadAllCortine = null) 
+           UnityEngine.MonoBehaviour loadAllCortine = null,
+           Action<float> onProcess = null, int maxAsyncReadCnt = 500) 
             where V : ConfigBase<K2>  {
 
             if (stream == null)
@@ -824,32 +815,28 @@ namespace NsLib.Config {
                 System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
                 long dataOffset = FilePathMgr.Instance.ReadLong(stream);
                 int DictCnt = FilePathMgr.Instance.ReadInt(stream);
-                if (maps == null)
-                    maps = new Dictionary<K1, Dictionary<K2, V>>();
+                if (DictCnt > 0) {
+                    if (maps == null)
+                        maps = new Dictionary<K1, Dictionary<K2, V>>();
 
-                Dictionary<K2, V> subMap = null;
-                for (int j = 0; j < DictCnt; ++j) {
-                    int subItemCnt = FilePathMgr.Instance.ReadInt(stream);
-                    if (subItemCnt > 0) {
+                    Dictionary<K2, V> subMap = new Dictionary<K2, V>();
+                    for (int j = 0; j < DictCnt; ++j) {
                         V config = Activator.CreateInstance<V>();
                         config.stream = stream;
                         config.dataOffset = dataOffset;
                         K2 key2 = config.ReadKey();
                         subMap[(K2)key2] = config;
+                    }
 
-                        for (int k = 1; k < subItemCnt; ++k) {
-                            config = Activator.CreateInstance<V>();
-                            config.stream = stream;
-                            config.dataOffset = dataOffset;
-                            key2 = config.ReadKey();
-                            subMap[(K2)key2] = config;
-                        }
+
+                    if (subMap != null && subMap.Count > 0) {
+                        maps[((K1)key1)] = subMap;
                     }
                 }
+            }
 
-                if (subMap != null && subMap.Count > 0) {
-                    maps[((K1)key1)] = subMap;
-                }
+            if (isLoadAll && maps != null && maps.Count > 0) {
+                StartLoadAllCortine(maps, loadAllCortine, valueType, onProcess, maxAsyncReadCnt);
             }
 
             return maps;
@@ -973,11 +960,18 @@ namespace NsLib.Config {
                         // 取出第一个
                         if (subIter.MoveNext()) {
                             IConfigBase v = subIter.Value as IConfigBase;
-                            v.WriteKey(key);
+                            FilePathMgr.Instance.WriteObject(stream, key);
                             // 偏移
                             FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
                             // 数量
                             FilePathMgr.Instance.WriteInt(stream, vs.Count);
+
+                            System.Object key2 = subIter.Key;
+                            v.WriteKey(key2);
+                            while (subIter.MoveNext()) {
+                                key2 = subIter.Key;
+                                v.WriteKey(key2);
+                            }
                         }
                         subIter.DisposeIter();
                     }
