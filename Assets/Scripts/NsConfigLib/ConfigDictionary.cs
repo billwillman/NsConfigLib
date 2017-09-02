@@ -343,6 +343,10 @@ namespace NsLib.Config {
                     if (config == null) {
                         return new KeyValuePair<K, V>();
                     }
+
+                    if (config.IsReaded)
+                        return Iteror.Current;
+
                     config.StreamSeek();
                     config.ReadValue();
                     return Iteror.Current;
@@ -542,6 +546,70 @@ namespace NsLib.Config {
                     ret = null;
                 return ret;
             }
+        }
+
+        public struct Enumerator {
+            private bool m_IsJson;
+            public Enumerator(bool isJson, IEnumerator<KeyValuePair<K1, Dictionary<K2, V>>> iter) {
+                m_IsJson = isJson;
+                Iteror = iter;
+            }
+
+            internal IEnumerator<KeyValuePair<K1, Dictionary<K2, V>>> Iteror {
+                get;
+                private set;
+            }
+
+            public KeyValuePair<K1, Dictionary<K2, V>> Current {
+                get {
+                    if (Iteror == null)
+                        return new KeyValuePair<K1, Dictionary<K2, V>>();
+                    if (m_IsJson) {
+                        return Iteror.Current;
+                    }
+                    Dictionary<K2, V> map = Iteror.Current.Value;
+                    var iter = map.GetEnumerator();
+                    try {
+                        if (iter.MoveNext()) {
+                            V config = iter.Current.Value;
+                            if (config.IsReaded)
+                                return Iteror.Current;
+                            config.StreamSeek();
+                            config.ReadValue();
+
+                            while (iter.MoveNext()) {
+                                config = iter.Current.Value;
+                                config.ReadValue();
+                            }
+
+                        } else {
+                            return new KeyValuePair<K1, Dictionary<K2, V>>();
+                        }
+                    } finally {
+                        iter.Dispose();
+                    }
+                    return Iteror.Current;
+                }
+            }
+
+            public void Dispose() {
+                if (Iteror == null)
+                    return;
+                Iteror.Dispose();
+            }
+            public bool MoveNext() {
+                if (Iteror == null)
+                    return false;
+                return Iteror.MoveNext();
+            }
+        }
+
+        public Enumerator GetEnumerator() {
+            if (m_Map == null)
+                return new Enumerator();
+            var iter = m_Map.GetEnumerator();
+            Enumerator ret = new Enumerator(m_IsJson, iter);
+            return ret;
         }
 
         public bool LoadFromTextAsset(TextAsset asset, bool isLoadAll = false) {
