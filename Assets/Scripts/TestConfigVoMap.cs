@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using NsLib.Config;
+using LitJson;
+using System.Collections.Generic;
 
 public class TestConfigVoMap : MonoBehaviour {
 
@@ -28,13 +30,20 @@ public class TestConfigVoMap : MonoBehaviour {
             }
         }
 
-        if (GUI.Button(new Rect(400, 100, 150, 50), "预加载")) {
+        if (GUI.Button(new Rect(400, 100, 150, 50), "预加载全部")) {
             TextAsset asset = Resources.Load<TextAsset>("TaskStepCfg_Binary");
             if (asset != null) {
 
                 ConfigVoMapMap<string, string, TaskStepVO> maps = new ConfigVoMapMap<string, string, TaskStepVO>();
                 m_StartTime = Time.realtimeSinceStartup;
                 maps.Preload(asset, this, OnReadEnd, null);
+            }
+        }
+
+        if (GUI.Button(new Rect(100, 150, 150, 50), "LITJSON加载")) {
+            TextAsset asset = Resources.Load<TextAsset>("TaskStepCfg");
+            if (asset != null) {
+                JsonMapper.ToObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
             }
         }
     }
