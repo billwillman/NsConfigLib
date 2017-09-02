@@ -113,9 +113,9 @@ namespace NsLib.Config {
 
         }
 
-        public static void ProloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, TextAsset asset,
+        public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
-            Action<IDictionary> onEnd) where V : ConfigBase<K2>{
+            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K2>{
             isJson = false;
             if (maps == null || asset == null || mono == null) {
                 if (onEnd != null)
@@ -123,7 +123,7 @@ namespace NsLib.Config {
                 return;
             }
 
-            PreloadWrap<K1, K2, V>(maps, asset.bytes, mono, out isJson, onEnd);
+            PreloadWrap<K1, K2, V>(maps, asset.bytes, mono, out isJson, onEnd, onProcess);
         }
 
         public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
@@ -458,6 +458,136 @@ namespace NsLib.Config {
                         onEnd(ret);
                 }, onProcess);
             return true;
+        }
+    }
+
+    public class ConfigVoMapMap<K1, K2, V>: IConfigVoMap<K1> where V : ConfigBase<K2> {
+        private bool m_IsJson = true;
+        private Dictionary<K1, Dictionary<K2, V>> m_Map = null;
+
+        public bool IsJson {
+            get {
+                return m_IsJson;
+            }
+        }
+
+        public bool ContainsKey(K1 key) {
+            if (m_Map == null)
+                return false;
+            return m_Map.ContainsKey(key);
+        }
+
+        public bool TryGetValue(K1 key, out Dictionary<K2, V> value) {
+            value = null;
+            if (m_Map == null)
+                return false;
+            if (m_IsJson) {
+                return m_Map.TryGetValue(key, out value);
+            }
+            if (!ConfigWrap.ConfigTryGetValue<K1, K2, V>(m_Map, key, out value)) {
+                value = null;
+                return false;
+            }
+            return true;
+        }
+
+        public bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono,
+            Action<IConfigVoMap<K1>> onEnd, Action<float> onProcess) {
+
+            if (buffer == null || mono == null || buffer.Length <= 0)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K1, Dictionary<K2, V>>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.PreloadWrap<K1, K2, V>(m_Map, buffer, mono, out m_IsJson,
+                (IDictionary maps) => {
+                    IConfigVoMap<K1> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                }, onProcess);
+            return true;
+
+        }
+
+        public bool Preload(TextAsset asset, UnityEngine.MonoBehaviour mono,
+            Action<IConfigVoMap<K1>> onEnd, Action<float> onProcess) {
+            if (asset == null || mono == null)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K1, Dictionary<K2, V>>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.PreloadWrap<K1, K2, V>(m_Map, asset, mono, out m_IsJson,
+                (IDictionary maps) => {
+                    IConfigVoMap<K1> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                }, onProcess);
+            return true;
+        }
+
+        public Dictionary<K2, V> this[K1 key] {
+            get {
+                if (m_Map == null)
+                    return null;
+
+                Dictionary<K2, V> ret;
+                if (m_IsJson) {
+                    if (!m_Map.TryGetValue(key, out ret))
+                        ret = null;
+                    return ret;
+                }
+                if (!this.TryGetValue(key, out ret))
+                    ret = null;
+                return ret;
+            }
+        }
+
+        public bool LoadFromTextAsset(TextAsset asset, bool isLoadAll = false) {
+            if (asset == null)
+                return false;
+            m_Map = ConfigDictionary.ToWrapMap<K1, K2, V>(asset, out m_IsJson, isLoadAll);
+            return m_Map != null;
+        }
+
+        public bool LoadFromBytes(byte[] buffer, bool isLoadAll = false) {
+            if (buffer == null || buffer.Length <= 0)
+                return false;
+            m_Map = ConfigDictionary.ToWrapMap<K1, K2, V>(buffer, out m_IsJson, isLoadAll);
+            return m_Map != null;
+        }
+
+        public List<Dictionary<K2, V>> ValueList {
+            get {
+                if (m_Map == null)
+                    return null;
+                List<Dictionary<K2, V>> ret = m_Map.Values.ToList();
+                if (m_IsJson)
+                    return ret;
+                if (ret != null) {
+                    for (int i = 0; i < ret.Count; ++i) {
+                        Dictionary<K2, V> vs = ret[i];
+                        if (vs != null && vs.Count > 0) {
+                            var iter = vs.GetEnumerator();
+                            if (iter.MoveNext()) {
+                                V v = iter.Current.Value;
+                                if (v.IsReaded)
+                                    continue;
+                                v.StreamSeek();
+                                v.ReadValue();
+                                while (iter.MoveNext()) {
+                                    v = iter.Current.Value;
+                                    v.ReadValue();
+                                }
+                            }
+                            iter.Dispose();
+                        }
+                    }
+                }
+
+                return ret;
+            }
         }
     }
 

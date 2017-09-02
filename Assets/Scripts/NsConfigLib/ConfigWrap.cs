@@ -106,6 +106,38 @@ namespace NsLib.Config {
             return config;
         }
 
+        private static Dictionary<K2, V> ReadItem<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps,
+            K1 key) where V : ConfigBase<K2> {
+            if (maps == null || maps.Count <= 0)
+                return null;
+            Dictionary<K2, V> vs;
+            if (!maps.TryGetValue(key, out vs) || vs == null || vs.Count <= 0)
+                return null;
+            var iter = vs.GetEnumerator();
+            try {
+                if (iter.MoveNext()) {
+                    V config = iter.Current.Value;
+                    if (config == null)
+                        return null;
+                    if (!config.StreamSeek())
+                        return null;
+                    bool ret = config.ReadValue();
+                    if (!ret)
+                        return null;
+                    while (iter.MoveNext()) {
+                        config = iter.Current.Value;
+                        ret = config.ReadValue();
+                        if (!ret)
+                            return null;
+                    }
+                }
+
+                return vs;
+            } finally {
+                iter.Dispose();
+            }
+        }
+
         private static List<V> ReadItem<K, V>(Dictionary<K, List<V>> maps, K key) where V : ConfigBase<K> {
             if (maps == null || maps.Count <= 0)
                 return null;
@@ -132,6 +164,14 @@ namespace NsLib.Config {
                     return null;
             }
             return vs;
+        }
+
+        public static bool ConfigTryGetValue<K1, K2, V>(this Dictionary<K1, Dictionary<K2, V>> maps, K1 key, out Dictionary<K2, V> value) where V: ConfigBase<K2> {
+            value = null;
+            if (maps == null || maps.Count <= 0)
+                return false;
+            value = ReadItem(maps, key);
+            return value != null;
         }
 
         public static bool ConfigTryGetValue<K, V>(this Dictionary<K, V> maps, K key, out V value) where V : ConfigBase<K> {
