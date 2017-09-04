@@ -119,3 +119,44 @@ public class TaskStepVO: ConfigStringKey {
     [ConfigId(19)]
     public string gossip { set; get; }
 }
+
+[ConfigConvert("TaskCfg", typeof(Dictionary<string, TaskConfigVO>),
+    "TaskCfg_Binary")]
+public class TaskConfigVO: ConfigStringKey {
+    [ConfigId(0)]
+    public int id { set; get; }
+    [ConfigId(1)]
+    public string name { set; get; }
+    [ConfigId(2)]
+    public int preId { set; get; }
+    [ConfigId(3)]
+    public int allowLv { set; get; }
+    [ConfigId(4)]
+    public string allowJob { set; get; }
+    [ConfigId(5)]
+    public int type { set; get; }
+    [ConfigId(6)]
+    public int clientType { set; get; }
+    [ConfigId(7)]
+    public int countType { set; get; }
+    [ConfigId(8)]
+    public int count { set; get; }
+    [ConfigId(9)]
+    public int limitTime { set; get; }
+    [ConfigId(10)]
+    public int prizeId { set; get; }
+    [ConfigId(11)]
+    public int npcId { set; get; }
+    [ConfigId(12)]
+    public bool autoGet { set; get; }
+    [ConfigId(13)]
+    public int isDynamicNpc { set; get; }
+    [ConfigId(14)]
+    public int isGiveup { set; get; }
+    [ConfigId(15)]
+    public string taskdesc { get; set; }
+    [ConfigId(16)]
+    public string taskgoal { get; set; }
+    [ConfigId(17)]
+    public int activityID { get; set; }
+}

@@ -115,6 +115,7 @@
     <None Include="Assets\Plugins\JsonDotNet\AOT\Newtonsoft.Json.XML" />
     <None Include="Assets\Plugins\JsonDotNet\Standalone\Newtonsoft.Json.XML" />
     <None Include="Assets\Resources\NpcCfg.txt" />
+    <None Include="Assets\Resources\TaskCfg.txt" />
     <None Include="Assets\Resources\TaskStepCfg.txt" />
     <None Include="Assets\Resources\TaskTalkCfg.txt" />
     <None Include="Assets\Scripts\fastJson\history.txt" />
