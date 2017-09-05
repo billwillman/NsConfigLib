@@ -103,9 +103,6 @@
     <Reference Include="System.Net.Json">
       <HintPath>Assets\Plugins\System.Net.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Assets\Plugins\JsonDotNet\Standalone\Newtonsoft.Json.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="NsConfigLib.csproj">
@@ -118,6 +115,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\JsonDotNet\Assemblies\Windows\Newtonsoft.Json.XML" />
+    <None Include="Assets\JsonDotNet\JsonDotNet201Source\Source\Artifacts\Debug\link.xml" />
+    <None Include="Assets\JsonDotNet\JsonDotNet201Source\Source\Artifacts\Release\link.xml" />
+    <None Include="Assets\JsonDotNet\JsonDotNet201Source\Source\LinkXML\link.xml" />
     <None Include="Assets\JsonDotNet\link.xml" />
     <None Include="Assets\Plugins\JsonDotNet\AOT\Newtonsoft.Json.XML" />
     <None Include="Assets\Plugins\JsonDotNet\Standalone\Newtonsoft.Json.XML" />
