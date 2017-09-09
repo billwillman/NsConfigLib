@@ -119,16 +119,23 @@ namespace NsLib.Config {
                     V config = iter.Current.Value;
                     if (config == null)
                         return null;
-                    if (!config.StreamSeek())
-                        return null;
-                    bool ret = config.ReadValue();
-                    if (!ret)
-                        return null;
-                    while (iter.MoveNext()) {
-                        config = iter.Current.Value;
-                        ret = config.ReadValue();
+                    if (config.IsReaded)
+                    {
+                        if (!config.StreamSeek())
+                             return null;
+                        bool ret = config.ReadValue();
                         if (!ret)
                             return null;
+                    
+
+                        while (iter.MoveNext()) {
+                            config = iter.Current.Value;
+                            if (config.IsReaded)
+                                continue;
+                            ret = config.ReadValue();
+                            if (!ret)
+                                return null;
+                        }
                     }
                 }
 
@@ -159,6 +166,8 @@ namespace NsLib.Config {
 
             for (int i = 1; i < vs.Count; ++i) {
                 config = vs[i];
+                if (config.IsReaded)
+                    continue;
                 ret = config.ReadValue();
                 if (!ret)
                     return null;

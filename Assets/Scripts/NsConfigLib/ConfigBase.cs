@@ -120,11 +120,11 @@ namespace NsLib.Config {
         // 默认情况使用反射来处理，后面类继承这个方法，工具生成这个代码
         // 后面一定要用工具生成代码，减少反射（因为是正式游戏运行时使用）
         public virtual bool ReadValue() {
-            if (stream == null)
-                return false;
-
             if (IsReaded)
                 return true;
+
+            if (stream == null)
+                return false;
 
             IsReaded = true;
 
@@ -136,6 +136,7 @@ namespace NsLib.Config {
                 System.Reflection.PropertyInfo prop = m_Props[i]; 
                 FilePathMgr.Instance.ReadProperty(stream, prop, this);
             }
+            stream = null;
 
             return true;
         }
