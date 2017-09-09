@@ -732,8 +732,8 @@ namespace NsLib.Config {
 
             int curCnt = 0;
             System.Type keyType1 = typeof(K1);
-            System.Type keyType2 = typeof(K2);
-            System.Type subDictType = typeof(Dictionary<K2, V>);
+         //   System.Type keyType2 = typeof(K2);
+        //    System.Type subDictType = typeof(Dictionary<K2, V>);
             for (uint i = 0; i < header.Count; ++i) {
                 System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
                 long dataOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -809,8 +809,8 @@ namespace NsLib.Config {
 
             Dictionary<K1, Dictionary<K2, V>> maps = null;
             System.Type keyType1 = typeof(K1);
-            System.Type keyType2 = typeof(K2);
-            System.Type subDictType = typeof(Dictionary<K2, V>);
+          //  System.Type keyType2 = typeof(K2);
+         //   System.Type subDictType = typeof(Dictionary<K2, V>);
             for (uint i = 0; i < header.Count; ++i) {
                 System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
                 long dataOffset = FilePathMgr.Instance.ReadLong(stream);

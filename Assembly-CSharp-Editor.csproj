@@ -46,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\NsConfigLib\Editor\ConfigAssetImporter.cs" />
+     <None Include="Assets\Resources\TaskCfg.txt" />
      <None Include="Assets\Resources\TaskTalkCfg.txt" />
+     <None Include="Assets\Scripts\fastJson\history.txt" />
      <None Include="Assets\Resources\TaskStepCfg.txt" />
      <None Include="Assets\Resources\NpcCfg.txt" />
  <Reference Include="UnityEditor.Advertisements">
@@ -72,6 +74,12 @@
  </Reference>
  <Reference Include="UnityEditor.TreeEditor">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/TreeEditor/Editor/UnityEditor.TreeEditor.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Net.Json">
+ <HintPath>/Users/sheqiong/NsConfigLib/Assets/Plugins/System.Net.Json.dll</HintPath>
+ </Reference>
+ <Reference Include="Newtonsoft.Json">
+ <HintPath>/Users/sheqiong/NsConfigLib/Assets/Plugins/JsonDotNet/Standalone/Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.Graphs">
  <HintPath>/Applications/Unity/Unity.app/Contents/Managed/UnityEditor.Graphs.dll</HintPath>

@@ -63,12 +63,25 @@
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigDictionary.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigHeader.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigWrap.cs" />
+     <Compile Include="Assets\Scripts\NsConfigLib\JsonWrap.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\LitJsonHelper.cs" />
      <Compile Include="Assets\Scripts\Task.cs" />
+     <Compile Include="Assets\Scripts\TestConfigVoMap.cs" />
      <Compile Include="Assets\Scripts\TestListConfig.cs" />
      <Compile Include="Assets\Scripts\Util\FilePathMgr.cs" />
      <Compile Include="Assets\Scripts\Util\Singleton.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\AssemblyInfo.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\Formatter.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\Getters.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\JSON.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\JsonParser.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\JsonSerializer.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\Reflection.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\SafeDictionary.cs" />
+     <Compile Include="Assets\Scripts\fastJson\fastJSON\dynamic.cs" />
+     <None Include="Assets\Resources\TaskCfg.txt" />
      <None Include="Assets\Resources\TaskTalkCfg.txt" />
+     <None Include="Assets\Scripts\fastJson\history.txt" />
      <None Include="Assets\Resources\TaskStepCfg.txt" />
      <None Include="Assets\Resources\NpcCfg.txt" />
  <Reference Include="UnityEngine.UI">
@@ -76,6 +89,12 @@
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Net.Json">
+ <HintPath>/Users/sheqiong/NsConfigLib/Assets/Plugins/System.Net.Json.dll</HintPath>
+ </Reference>
+ <Reference Include="Newtonsoft.Json">
+ <HintPath>/Users/sheqiong/NsConfigLib/Assets/Plugins/JsonDotNet/Standalone/Newtonsoft.Json.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

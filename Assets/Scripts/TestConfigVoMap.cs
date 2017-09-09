@@ -47,7 +47,7 @@ public class TestConfigVoMap : MonoBehaviour {
         if (GUI.Button(new Rect(100, 150, 150, 50), "LITJSON加载")) {
             TextAsset asset = Resources.Load<TextAsset>(_cJson);
             if (asset != null) {
-                JsonMapper.ToObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
+                LitJson.JsonMapper.ToObject<Dictionary<string, Dictionary<string, TaskStepVO>>>(asset.text);
             }
         }
 

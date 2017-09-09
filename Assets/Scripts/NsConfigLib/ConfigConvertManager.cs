@@ -61,7 +61,7 @@ namespace NsLib.Config {
             if (info == null || info.DictionaryType == null)
                 return;
 
-            System.Type dictType = info.DictionaryType;
+          //  System.Type dictType = info.DictionaryType;
             System.Collections.IDictionary values = LitJsonHelper.ToTypeObject(json, info.DictionaryType) as System.Collections.IDictionary;
             if (values == null)
                 return;

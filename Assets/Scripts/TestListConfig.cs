@@ -36,7 +36,7 @@ public class TestListConfig: MonoBehaviour {
             return;
         if (GUI.Button (new Rect(100, 100, 150, 50), "测试LitJson")) {
             string str = m_Text.text;
-            JsonMapper.ToObject<Dictionary<string, List<TaskTalkCfg>>>(str);
+            LitJson.JsonMapper.ToObject<Dictionary<string, List<TaskTalkCfg>>>(str);
         }
 
         if (m_Binary != null) {
