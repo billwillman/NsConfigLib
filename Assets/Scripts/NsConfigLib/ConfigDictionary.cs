@@ -294,6 +294,8 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess = null);
         bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono, 
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess = null);
+			
+		void Clear();
     }
 
     
@@ -301,6 +303,12 @@ namespace NsLib.Config {
     public class ConfigVoMap<K, V>: IConfigVoMap<K> where V: ConfigBase<K> {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
+		
+		public void Clear() {
+            if (m_Map != null)
+                m_Map.Clear();
+            m_IsJson = true;
+        }
 
         // 尽量少用这个方法，因为这样会导致配置全加载
         public List<V> ValueList {
@@ -468,6 +476,12 @@ namespace NsLib.Config {
     public class ConfigVoMapMap<K1, K2, V>: IConfigVoMap<K1> where V : ConfigBase<K2> {
         private bool m_IsJson = true;
         private Dictionary<K1, Dictionary<K2, V>> m_Map = null;
+		
+		public void Clear() {
+            if (m_Map != null)
+                m_Map.Clear();
+            m_IsJson = true;
+        }
 
         public bool IsJson {
             get {
@@ -663,6 +677,12 @@ namespace NsLib.Config {
 
         private bool m_IsJson = true;
         private Dictionary<K, List<V>> m_Map = null;
+		
+		public void Clear() {
+            if (m_Map != null)
+                m_Map.Clear();
+            m_IsJson = true;
+        }
 
         public List<List<V>> ValueList {
             get {
