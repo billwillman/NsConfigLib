@@ -23,6 +23,7 @@ namespace NsLib.Config {
         bool ReadValue();
 
         bool WriteKey(System.Object key);
+		System.Type GetKeyType();
 
         System.Object ReadKEY();
     }
@@ -58,6 +59,10 @@ namespace NsLib.Config {
             get;
             set;
         }
+		public System.Type GetKeyType() {
+            return typeof(KEY);
+        }
+		
         private bool InitPropertys() {
             // 一个类型值只读一次
             var m_Props = Propertys;
@@ -160,7 +165,7 @@ namespace NsLib.Config {
         }
 
         public bool WriteKey(System.Object key) {
-            return FilePathMgr.Instance.WriteObject(stream, key);
+            return FilePathMgr.Instance.WriteObject(stream, key, GetKeyType());
         }
 
         // 是否已经读取

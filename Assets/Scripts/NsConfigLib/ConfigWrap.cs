@@ -960,7 +960,7 @@ namespace NsLib.Config {
                         // 取出第一个
                         if (subIter.MoveNext()) {
                             IConfigBase v = subIter.Value as IConfigBase;
-                            FilePathMgr.Instance.WriteObject(stream, key);
+                            FilePathMgr.Instance.WriteObject(stream, key, v.GetKeyType());
                             // 偏移
                             FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
                             // 数量
