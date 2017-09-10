@@ -217,6 +217,8 @@ namespace NsLib.Config {
                     while (iter.MoveNext()) {
                         IConfigBase config = iter.Value as IConfigBase;
                         Stream stream = config.stream;
+                        if (stream == null)
+                            continue;
                         stream.Seek(config.dataOffset, SeekOrigin.Begin);
                         config.ReadValue();
                     }
@@ -227,6 +229,8 @@ namespace NsLib.Config {
                         IList vs = iter.Value as IList;
                         IConfigBase v = vs[0] as IConfigBase;
                         Stream stream = v.stream;
+                        if (stream == null)
+                            continue;
                         stream.Seek(v.dataOffset, SeekOrigin.Begin);
                         for (int i = 0; i < vs.Count; ++i) {
                             v = vs[i] as IConfigBase;
@@ -242,7 +246,8 @@ namespace NsLib.Config {
                         var subIter = map.GetEnumerator();
                         if (subIter.MoveNext()) {
                             IConfigBase v = subIter.Value as IConfigBase;
-                            v.StreamSeek();
+                            if (!v.StreamSeek ())
+                                continue;
                             v.ReadValue();
                             while (subIter.MoveNext()) {
                                 v = subIter.Value as IConfigBase;
@@ -275,7 +280,8 @@ namespace NsLib.Config {
                 var iter = maps.GetEnumerator();
                 while (iter.MoveNext()) {
                     IConfigBase config = iter.Value as IConfigBase;
-                    config.StreamSeek();
+                    if (!config.StreamSeek ())
+                        continue;
                     config.ReadValue();
 
                     if (onProcess != null) {
@@ -297,7 +303,8 @@ namespace NsLib.Config {
                 while (iter.MoveNext()) {
                     IList vs = iter.Value as IList;
                     IConfigBase v = vs [0] as IConfigBase;
-                    v.StreamSeek();
+                    if (!v.StreamSeek ())
+                        continue;
                     for (int i = 0; i < vs.Count; ++i) {
                         v = vs[i] as IConfigBase;
                         v.ReadValue();
@@ -326,7 +333,8 @@ namespace NsLib.Config {
                     var subIter = map.GetEnumerator();
                     if (subIter.MoveNext()) {
                         IConfigBase v = subIter.Value as IConfigBase;
-                        v.StreamSeek();
+                        if (!v.StreamSeek ())
+                            continue;
                         v.ReadValue();
                         while (subIter.MoveNext()) {
                             v = subIter.Value as IConfigBase;
