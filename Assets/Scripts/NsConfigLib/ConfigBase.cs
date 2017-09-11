@@ -158,8 +158,11 @@ namespace NsLib.Config {
             var m_Props = this.Propertys;
             for (int i = 0; i < m_Props.Count; ++i) {
                 System.Reflection.PropertyInfo prop = m_Props[i];
-                object value = prop.GetValue(this, null); 
-                FilePathMgr.Instance.WriteProperty(stream, prop, value);
+				if (prop.CanRead && prop.CanWrite)
+				{
+					object value = prop.GetValue(this, null); 
+					FilePathMgr.Instance.WriteProperty(stream, prop, value);
+				}
             }
 
             return true;
