@@ -119,7 +119,7 @@ namespace NsLib.Config {
                     V config = iter.Current.Value;
                     if (config == null)
                         return null;
-                    if (config.IsReaded)
+                    if (!config.IsReaded)
                     {
                         if (!config.StreamSeek())
                              return null;
