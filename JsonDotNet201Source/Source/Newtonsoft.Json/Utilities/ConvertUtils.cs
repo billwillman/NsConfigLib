@@ -333,8 +333,8 @@ namespace Newtonsoft.Json.Utilities
         }
 
         private static bool IsConvertStringToVector3(TypeConvertKey t) {
-            return (string.Compare(t.InitialType.FullName, "System.String") == 0 &&
-                string.Compare(t.TargetType.FullName, "UnityEngine.Vector3") == 0);
+            return (string.Compare(t.InitialType.FullName, "System.String", StringComparison.CurrentCultureIgnoreCase) == 0 &&
+                string.Compare(t.TargetType.FullName, "UnityEngine.Vector3", StringComparison.CurrentCultureIgnoreCase) == 0);
         }
 
         //----------------------------
