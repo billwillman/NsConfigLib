@@ -39,36 +39,52 @@ public class TestListConfig: MonoBehaviour {
             LitJson.JsonMapper.ToObject<Dictionary<string, List<TaskTalkCfg>>>(str);
         }
 
+        if (GUI.Button(new Rect(250, 100, 150, 50), "测试FastJson")) {
+            string str = m_Text.text;
+            fastJSON.JSON.ToObject<Dictionary<string, List<TaskTalkCfg>>>(str);
+        }
+
+        if (GUI.Button(new Rect(400, 100, 150, 50), "测试System.Net.Json")) {
+            string str = m_Text.text;
+            System.Net.Json.JsonTextParser parser = new System.Net.Json.JsonTextParser();
+            parser.Parse(str);
+        }
+
+        if (GUI.Button(new Rect(550, 100, 150, 50), "测试Newtonsoft.Json")) {
+            string str = m_Text.text;
+            Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, List<TaskTalkCfg>>>(str);
+        }
+
         if (m_Binary != null) {
-            if (GUI.Button (new Rect (100, 150, 150, 50), "测试二进制首次不全读取")) {
-                m_Stream = new MemoryStream (m_Binary.bytes);
-                var dict = ConfigWrap.ToObjectList<string, TaskTalkCfg> (m_Stream);
+            if (GUI.Button(new Rect(100, 150, 150, 50), "测试二进制首次不全读取")) {
+                m_Stream = new MemoryStream(m_Binary.bytes);
+                var dict = ConfigWrap.ToObjectList<string, TaskTalkCfg>(m_Stream);
                 List<TaskTalkCfg> list;
-                if (dict.ConfigTryGetValue ("5", out list)) {
+                if (dict.ConfigTryGetValue("5", out list)) {
                 }
             }
 
-            if (GUI.Button (new Rect (250, 150, 150, 50), "二进制全部读取")) {
-                m_Stream = new MemoryStream (m_Binary.bytes);
-                ConfigWrap.ToObjectList<string, TaskTalkCfg> (m_Stream, true);
+            if (GUI.Button(new Rect(250, 150, 150, 50), "二进制全部读取")) {
+                m_Stream = new MemoryStream(m_Binary.bytes);
+                ConfigWrap.ToObjectList<string, TaskTalkCfg>(m_Stream, true);
             }
 
-            if (GUI.Button (new Rect (400, 150, 150, 50), "二进制全部读取携程")) {
-                m_Stream = new MemoryStream (m_Binary.bytes);
-                ConfigWrap.ToObjectList<string, TaskTalkCfg> (m_Stream, true, this);
+            if (GUI.Button(new Rect(400, 150, 150, 50), "二进制全部读取携程")) {
+                m_Stream = new MemoryStream(m_Binary.bytes);
+                ConfigWrap.ToObjectList<string, TaskTalkCfg>(m_Stream, true, this);
             }
 
-            if (GUI.Button (new Rect (550, 150, 150, 50), "二进制异步全读取")) {
-                m_Stream = new MemoryStream (m_Binary.bytes);
+            if (GUI.Button(new Rect(550, 150, 150, 50), "二进制异步全读取")) {
+                m_Stream = new MemoryStream(m_Binary.bytes);
                 m_StartTime = Time.realtimeSinceStartup;
-                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg> (m_Stream, 
+                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg>(m_Stream,
                     m_TaskDict, this, true, OnReadEnd);
             }
 
-            if (GUI.Button (new Rect (700, 150, 150, 50), "二进制异步非全读取")) {
-                m_Stream = new MemoryStream (m_Binary.bytes);
+            if (GUI.Button(new Rect(700, 150, 150, 50), "二进制异步非全读取")) {
+                m_Stream = new MemoryStream(m_Binary.bytes);
                 m_StartTime = Time.realtimeSinceStartup;
-                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg> (m_Stream, 
+                ConfigWrap.ToObjectListAsync<string, TaskTalkCfg>(m_Stream,
                     m_TaskDict, this, false, OnReadEnd);
             }
         }
