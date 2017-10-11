@@ -134,7 +134,8 @@ namespace NsLib.Config {
             var m_Props = this.Propertys;
             for (int i = 0; i < m_Props.Count; ++i) {
                 System.Reflection.PropertyInfo prop = m_Props[i]; 
-                FilePathMgr.Instance.ReadProperty(stream, prop, this);
+				if (prop.CanRead && prop.CanWrite)
+					FilePathMgr.Instance.ReadProperty(stream, prop, this);
             }
             stream = null;
 
