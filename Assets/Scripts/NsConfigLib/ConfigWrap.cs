@@ -399,7 +399,11 @@ namespace NsLib.Config {
                 }
             }
 
-            yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
+            if (isLoadAll && maps.Count > 0) {
+                yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
+                stream.Close();
+                stream.Dispose();
+            }
 
             if (onOK != null)
                 onOK(maps);
@@ -700,6 +704,8 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps.Count > 0) {
                 yield return StartLoadCortine(maps, valueType,  onProcess, maxAsyncReadCnt) ;
+                stream.Close();
+                stream.Dispose();
             }
 
             if (onOK != null)
@@ -779,6 +785,8 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps.Count > 0) {
                 yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
+                stream.Close();
+                stream.Dispose();
             }
 
             if (onOK != null)
