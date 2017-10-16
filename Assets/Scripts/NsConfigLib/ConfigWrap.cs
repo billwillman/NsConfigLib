@@ -24,7 +24,7 @@ namespace NsLib.Config {
             cvMap = 2
         }
 
-        public static Dictionary<K, V> ToObject<K, V>(byte[] buffer, bool isLoadAll = false) where V : ConfigBase<K> {
+        public static Dictionary<K, V> ToObject<K, V>(byte[] buffer, bool isLoadAll = false) where V : ConfigBase<K>, new() {
             Dictionary<K, V> ret = null;
             if (buffer == null || buffer.Length <= 0)
                 return ret;
@@ -41,7 +41,7 @@ namespace NsLib.Config {
 
         // 首次读取
         public static Dictionary<K, V> ToObject<K, V>(Stream stream, bool isLoadAll = false,
-            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsynReadCnt = 500) where V : ConfigBase<K> {
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsynReadCnt = 500) where V : ConfigBase<K>, new() {
             if (stream == null)
                 return null;
             ConfigFileHeader header = new ConfigFileHeader();
@@ -57,7 +57,7 @@ namespace NsLib.Config {
 
             Dictionary<K, V> maps = null;
             for (uint i = 0; i < header.Count; ++i) {
-                V config = Activator.CreateInstance<V>();
+                V config = new V();
                 config.stream = stream;
                 K key = config.ReadKey();
                 config.dataOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -74,7 +74,7 @@ namespace NsLib.Config {
         }
 
         public static Dictionary<K, List<V>> ToObjectList<K, V>(byte[] buffer,
-            bool isLoadAll = false) where V : ConfigBase<K> {
+            bool isLoadAll = false) where V : ConfigBase<K>, new() {
             Dictionary<K, List<V>> ret = null;
             if (buffer == null || buffer.Length <= 0)
                 return ret;
@@ -363,7 +363,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps,
             bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
             if (stream == null || maps == null) {
                 yield break;
             }
@@ -383,7 +383,7 @@ namespace NsLib.Config {
 
             int curCnt = 0;
             for (uint i = 0; i < header.Count; ++i) {
-                V config = Activator.CreateInstance<V>();
+                V config = new V();
                 config.stream = stream;
                 K key = config.ReadKey();
                 config.dataOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -407,7 +407,7 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectAsync<K, V>(Stream stream,
             Dictionary<K, V> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOk = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K> {
+            Action<IDictionary> onOk = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
             if (stream == null || maps == null || mono == null)
                 return null;
 
@@ -435,7 +435,7 @@ namespace NsLib.Config {
         // 可以使用List<ConfigBase>或者ConfigBase
         public static Dictionary<K, V> TestCommonToObject<K, V>(byte[] buffer,
             bool isLoadAll = false,
-            UnityEngine.MonoBehaviour loadAllCortine = null) where V : class {
+            UnityEngine.MonoBehaviour loadAllCortine = null) where V : class, new() {
 
             MemoryStream stream = new MemoryStream(buffer);
             Dictionary<K, V> ret = TestCommonToObject<K, V>(stream, isLoadAll, loadAllCortine);
@@ -566,7 +566,7 @@ namespace NsLib.Config {
         public static Dictionary<K, V> TestCommonToObject<K, V>(Stream stream,
             bool isLoadAll = false,
             UnityEngine.MonoBehaviour loadAllCortine = null,
-            int maxAsyncReadCnt = 500) where V: class {
+            int maxAsyncReadCnt = 500) where V: class, new() {
 
             if (stream == null)
                 return null;
@@ -585,7 +585,7 @@ namespace NsLib.Config {
             switch (valueType) {
                 case ConfigValueType.cvObject: {
                         for (uint i = 0; i < header.Count; ++i) {
-                            ConfigBase<K> config = Activator.CreateInstance<V>() as ConfigBase<K>;
+                            ConfigBase<K> config = new V() as ConfigBase<K>;
                             config.stream = stream;
                             K key = config.ReadKey();
                             config.dataOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -615,7 +615,7 @@ namespace NsLib.Config {
                             int listCnt = FilePathMgr.Instance.ReadInt(stream);
                             if (maps == null)
                                 maps = new Dictionary<K, V>((int)header.Count);
-                            V vs = Activator.CreateInstance<V>();
+                            V vs = new V();
                             maps[key] = vs;
                             IList list = vs as IList;
                             list.Add(config);
@@ -642,8 +642,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
             Dictionary<K, List<V>> maps, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>
-        {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
 
             if (stream == null || maps == null) {
                 yield break;
@@ -666,7 +665,7 @@ namespace NsLib.Config {
 
             int curCnt = 0;
             for (uint i = 0; i < header.Count; ++i) {
-                V config = Activator.CreateInstance<V>();
+                V config = new V();
                 config.stream = stream;
                 K key = config.ReadKey();
                 long dataOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -678,7 +677,7 @@ namespace NsLib.Config {
                 maps[key] = vs;
                 vs.Add(config);
                 for (int j = 1; j < listCnt; ++j) {
-                    config = Activator.CreateInstance<V>();
+                    config = new V();
                     config.stream = stream;
                     config.dataOffset = dataOffset;
                     vs.Add(config);
@@ -710,8 +709,7 @@ namespace NsLib.Config {
         public static UnityEngine.Coroutine ToObjectListAsync<K, V>(Stream stream,
             Dictionary<K, List<V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
             Action<IDictionary> onOK = null, Action<float> onProcess = null, 
-            int maxAsyncReadCnt = 500) where V : ConfigBase<K>
-        {
+            int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
             if (stream == null || maps == null || mono == null)
                 return null;
             return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
@@ -719,7 +717,7 @@ namespace NsLib.Config {
 
         public static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2>, new() {
             if (stream == null || maps == null || mono == null)
                 return null;
             return mono.StartCoroutine(_ToObjectMapAsync<K1, K2, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
@@ -727,7 +725,7 @@ namespace NsLib.Config {
 
         private static IEnumerator _ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, bool isLoadAll = false,
-            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2> {
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2>, new() {
             if (stream == null || maps == null) {
                 yield break;
             }
@@ -758,7 +756,7 @@ namespace NsLib.Config {
                 if (DictCnt > 0) {
                     Dictionary<K2, V> subMap = new Dictionary<K2, V>();
                     for (int j = 0; j < DictCnt; ++j) {
-                        V config = Activator.CreateInstance<V>();
+                        V config = new V();
                         config.stream = stream;
                         config.dataOffset = dataOffset;
                         K2 key2 = config.ReadKey();
@@ -790,7 +788,7 @@ namespace NsLib.Config {
 
         public static Dictionary<K1, Dictionary<K2, V>> ToObjectMap<K1, K2, V>(byte[] buffer, bool isLoadAll = false,
            UnityEngine.MonoBehaviour loadAllCortine = null)
-            where V : ConfigBase<K2> {
+            where V : ConfigBase<K2>, new() {
             Dictionary<K1, Dictionary<K2, V>> ret = null;
             if (buffer == null || buffer.Length <= 0)
                 return ret;
@@ -809,7 +807,7 @@ namespace NsLib.Config {
         public static Dictionary<K1, Dictionary<K2, V>> ToObjectMap<K1, K2, V>(Stream stream, bool isLoadAll = false,
            UnityEngine.MonoBehaviour loadAllCortine = null,
            Action<float> onProcess = null, int maxAsyncReadCnt = 500) 
-            where V : ConfigBase<K2>  {
+            where V : ConfigBase<K2>, new() {
 
             if (stream == null)
                 return null;
@@ -838,7 +836,7 @@ namespace NsLib.Config {
 
                     Dictionary<K2, V> subMap = new Dictionary<K2, V>();
                     for (int j = 0; j < DictCnt; ++j) {
-                        V config = Activator.CreateInstance<V>();
+                        V config = new V();
                         config.stream = stream;
                         config.dataOffset = dataOffset;
                         K2 key2 = config.ReadKey();
@@ -860,7 +858,7 @@ namespace NsLib.Config {
         }
 
         public static Dictionary<K, List<V>> ToObjectList<K, V>(Stream stream, bool isLoadAll = false, 
-            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K> {
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
 
             if (stream == null)
                 return null;
@@ -876,7 +874,7 @@ namespace NsLib.Config {
 
             Dictionary<K, List<V>> maps = null;
             for (uint i = 0; i < header.Count; ++i) {
-                V config = Activator.CreateInstance<V>();
+                V config = new V();
                 config.stream = stream;
                 K key = config.ReadKey();
                 long dataOffset = FilePathMgr.Instance.ReadLong(stream);
@@ -888,7 +886,7 @@ namespace NsLib.Config {
                 maps[key] = vs;
                 vs.Add(config);
                 for (int j = 1; j < listCnt; ++j) {
-                    config = Activator.CreateInstance<V>();
+                    config = new V();
                     config.stream = stream;
                     config.dataOffset = dataOffset;
                     vs.Add(config);

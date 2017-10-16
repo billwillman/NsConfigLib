@@ -9,7 +9,7 @@ using System.Linq;
 namespace NsLib.Config {
 
     public static class ConfigDictionary {
-        public static Dictionary<K, V> ToWrap<K, V>(TextAsset asset, out bool isJson, bool isLoadAll = false) where V: ConfigBase<K> {
+        public static Dictionary<K, V> ToWrap<K, V>(TextAsset asset, out bool isJson, bool isLoadAll = false) where V: ConfigBase<K>, new() {
             isJson = false;
             if (asset == null)
                 return null;
@@ -21,7 +21,7 @@ namespace NsLib.Config {
         // 只用在测试中
         public static Dictionary<K, V> TestToWrap<K, V>(byte[] buffer, 
             out bool isJson, bool isLoadAll = false,
-            UnityEngine.MonoBehaviour loadAllCortine = null) where V:class {
+            UnityEngine.MonoBehaviour loadAllCortine = null) where V:class, new() {
             isJson = false;
             if (buffer == null || buffer.Length <= 0)
                 return null;
@@ -41,7 +41,7 @@ namespace NsLib.Config {
         }
         #endif
 
-        public static Dictionary<K, V> ToWrap<K, V>(byte[] buffer, out bool isJson, bool isLoadAll = false) where V : ConfigBase<K> {
+        public static Dictionary<K, V> ToWrap<K, V>(byte[] buffer, out bool isJson, bool isLoadAll = false) where V : ConfigBase<K>, new() {
             isJson = false;
             if (buffer == null || buffer.Length <= 0)
                 return null;
@@ -61,7 +61,7 @@ namespace NsLib.Config {
 
         public static void PreloadWrap<K, V>(Dictionary<K, V> maps, byte[] buffer,
             MonoBehaviour mono, out bool isJson,
-            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K> {
+            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
 
             isJson = false;
             if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
@@ -100,7 +100,7 @@ namespace NsLib.Config {
         // 预加载用
         public static void PreloadWrap<K, V>(Dictionary<K, V> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
-            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K> {
+            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
             isJson = false;
             if (maps == null || asset == null || mono == null) {
                 if (onEnd != null)
@@ -115,7 +115,7 @@ namespace NsLib.Config {
 
         public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
-            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K2>{
+            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K2>, new() {
             isJson = false;
             if (maps == null || asset == null || mono == null) {
                 if (onEnd != null)
@@ -128,7 +128,7 @@ namespace NsLib.Config {
 
         public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
             MonoBehaviour mono, out bool isJson, Action<IDictionary> onEnd,
-            Action<float> onProcess = null) where V : ConfigBase<K2> {
+            Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
             isJson = false;
             if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
                 if (onEnd != null)
@@ -165,7 +165,7 @@ namespace NsLib.Config {
 
         public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, byte[] buffer,
             MonoBehaviour mono, out bool isJson,
-            Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K> {
+            Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
 
             isJson = false;
             if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
@@ -203,7 +203,7 @@ namespace NsLib.Config {
 
         public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, TextAsset asset,
             MonoBehaviour mono, out bool isJson,
-            Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K> {
+            Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
             isJson = false;
             if (maps == null || asset == null || mono == null) {
                 if (onEnd != null)
@@ -216,7 +216,7 @@ namespace NsLib.Config {
 
         public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset,
             out bool isJson,
-            bool isLoadAll = false) where V : ConfigBase<K> {
+            bool isLoadAll = false) where V : ConfigBase<K>, new() {
             isJson = false;
             if (asset == null)
                 return null;
@@ -225,7 +225,7 @@ namespace NsLib.Config {
 
         public static Dictionary<K, List<V>> ToWrapList<K, V>(byte[] buffer,
             out bool isJson,
-            bool isLoadAll = false) where V : ConfigBase<K> {
+            bool isLoadAll = false) where V : ConfigBase<K>, new() {
 
             isJson = false;
             if (buffer == null || buffer.Length <= 0)
@@ -246,7 +246,7 @@ namespace NsLib.Config {
 
         public static Dictionary<K1, Dictionary<K2, V>> ToWrapMap<K1, K2, V>(TextAsset asset,
             out bool isJson,
-            bool isLoadAll = false) where V : ConfigBase<K2> {
+            bool isLoadAll = false) where V : ConfigBase<K2>, new() {
             isJson = false;
             if (asset == null)
                 return null;
@@ -256,7 +256,7 @@ namespace NsLib.Config {
 
         public static Dictionary<K1, Dictionary<K2, V>> ToWrapMap<K1, K2, V>(byte[] buffer,
             out bool isJson,
-            bool isLoadAll = false) where V : ConfigBase<K2> {
+            bool isLoadAll = false) where V : ConfigBase<K2>, new() {
 
             isJson = false;
             if (buffer == null || buffer.Length <= 0)
@@ -300,7 +300,7 @@ namespace NsLib.Config {
 
     
     // 两个配置
-    public class ConfigVoMap<K, V>: IConfigVoMap<K> where V: ConfigBase<K> {
+    public class ConfigVoMap<K, V>: IConfigVoMap<K> where V: ConfigBase<K>, new() {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
 		
@@ -473,7 +473,7 @@ namespace NsLib.Config {
         }
     }
 
-    public class ConfigVoMapMap<K1, K2, V>: IConfigVoMap<K1> where V : ConfigBase<K2> {
+    public class ConfigVoMapMap<K1, K2, V>: IConfigVoMap<K1> where V : ConfigBase<K2>, new() {
         private bool m_IsJson = true;
         private Dictionary<K1, Dictionary<K2, V>> m_Map = null;
 		
@@ -673,7 +673,7 @@ namespace NsLib.Config {
         }
     }
 
-    public class ConfigVoListMap<K, V> : IConfigVoMap<K> where V : ConfigBase<K> {
+    public class ConfigVoListMap<K, V> : IConfigVoMap<K> where V : ConfigBase<K>, new() {
 
         private bool m_IsJson = true;
         private Dictionary<K, List<V>> m_Map = null;
