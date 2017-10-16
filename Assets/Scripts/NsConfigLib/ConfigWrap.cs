@@ -34,6 +34,7 @@ namespace NsLib.Config {
             if (ret == null) {
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             return ret;
@@ -84,6 +85,7 @@ namespace NsLib.Config {
             if (ret == null) {
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             return ret;
@@ -403,6 +405,7 @@ namespace NsLib.Config {
                 yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             if (onOK != null)
@@ -446,6 +449,7 @@ namespace NsLib.Config {
             if (ret == null) {
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             return ret;
@@ -462,6 +466,7 @@ namespace NsLib.Config {
             if (ret == null) {
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (configType);
             }
             return ret;
         }
@@ -561,6 +566,7 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, null, maxAsyncReadCnt);
+                ConfigStringKey.ClearPropertys (configType);
             }
 
             return maps;
@@ -706,6 +712,7 @@ namespace NsLib.Config {
                 yield return StartLoadCortine(maps, valueType,  onProcess, maxAsyncReadCnt) ;
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             if (onOK != null)
@@ -787,6 +794,7 @@ namespace NsLib.Config {
                 yield return StartLoadCortine(maps, valueType, onProcess, maxAsyncReadCnt);
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             if (onOK != null)
@@ -805,6 +813,7 @@ namespace NsLib.Config {
             if (ret == null) {
                 stream.Close();
                 stream.Dispose();
+                ConfigStringKey.ClearPropertys (typeof(V));
             }
 
             return ret;

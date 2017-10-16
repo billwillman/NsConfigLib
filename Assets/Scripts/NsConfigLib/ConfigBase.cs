@@ -62,6 +62,20 @@ namespace NsLib.Config {
 		public System.Type GetKeyType() {
             return typeof(KEY);
         }
+
+        public void ClearPropertys()
+        {
+            System.Type tt = GetType ();
+            ClearPropertys (tt);
+        }
+
+        public static void ClearPropertys(System.Type tt)
+        {
+            if (tt == null)
+                return;
+            if (m_PropsMap.ContainsKey (tt))
+                m_PropsMap.Remove (tt);
+        }
 		
         private bool InitPropertys() {
             // 一个类型值只读一次
