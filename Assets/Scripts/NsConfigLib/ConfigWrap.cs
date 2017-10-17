@@ -69,9 +69,6 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, onProcess, maxAsynReadCnt);
-				stream.Close();
-				stream.Dispose();
-				ConfigStringKey.ClearPropertys (configType);
             }
 
             return maps;
@@ -569,9 +566,6 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, null, maxAsyncReadCnt);
-                stream.Close();
-				stream.Dispose();
-				ConfigStringKey.ClearPropertys (configType);
             }
 
             return maps;
@@ -649,9 +643,6 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, null, maxAsyncReadCnt);
-				stream.Close();
-				stream.Dispose();
-				ConfigStringKey.ClearPropertys (configType);
             }
 
             return maps;
@@ -877,9 +868,6 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, onProcess, maxAsyncReadCnt);
-				stream.Close();
-				stream.Dispose();
-				ConfigStringKey.ClearPropertys (configType);
             }
 
             return maps;
@@ -923,9 +911,6 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, onProcess, maxAsyncReadCnt);
-				stream.Close();
-				stream.Dispose();
-				ConfigStringKey.ClearPropertys (configType);
             }
 
 
