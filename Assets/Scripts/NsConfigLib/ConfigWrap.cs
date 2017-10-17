@@ -566,7 +566,6 @@ namespace NsLib.Config {
 
             if (isLoadAll && maps != null && maps.Count > 0) {
                 StartLoadAllCortine(maps, loadAllCortine, valueType, null, maxAsyncReadCnt);
-                ConfigStringKey.ClearPropertys (configType);
             }
 
             return maps;
