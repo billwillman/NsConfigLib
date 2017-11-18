@@ -303,6 +303,14 @@ namespace NsLib.Config {
     public class ConfigVoMap<K, V>: IConfigVoMap<K> where V: ConfigBase<K>, new() {
         private bool m_IsJson = true;
         private Dictionary<K, V> m_Map = null;
+		private Dictionary<K, ConfigOffset> m_OffsetMap = null;
+
+		private bool OffsetContains(K key)
+		{
+			if (m_OffsetMap == null || m_OffsetMap.Count <= 0)
+				return false;
+			return m_OffsetMap.ContainsKey (key);
+		}
 		
 		public void Clear() {
             if (m_Map != null)
@@ -390,7 +398,10 @@ namespace NsLib.Config {
         public bool ContainsKey(K key) {
             if (m_Map == null)
                 return false;
-            return m_Map.ContainsKey(key);
+			bool ret = m_Map.ContainsKey(key);
+			if (!ret)
+				ret = OffsetContains (key);
+			return ret;
         }
 
         public bool TryGetValue(K key, out V value) {

@@ -62,6 +62,7 @@
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigConvertManager.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigDictionary.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigHeader.cs" />
+     <Compile Include="Assets\Scripts\NsConfigLib\ConfigOffset.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\ConfigWrap.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\JsonWrap.cs" />
      <Compile Include="Assets\Scripts\NsConfigLib\LitJsonHelper.cs" />
