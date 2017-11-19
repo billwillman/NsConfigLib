@@ -128,12 +128,8 @@ namespace NsLib.Config {
             stream.Seek (dataOffset, SeekOrigin.Begin);
             return true;
         }
-
-        // 使用工具对继承的类进行反射，然后生成这部分代码，
-        // 不使用反射来做（为了性能）
-        // 默认情况使用反射来处理，后面类继承这个方法，工具生成这个代码
-        // 后面一定要用工具生成代码，减少反射（因为是正式游戏运行时使用）
-        public virtual bool ReadValue() {
+			
+        public bool ReadValue() {
             if (IsReaded)
                 return true;
 
@@ -142,19 +138,33 @@ namespace NsLib.Config {
 
             IsReaded = true;
 
-            if (!InitPropertys())
-                return false;
-
-            var m_Props = this.Propertys;
-            for (int i = 0; i < m_Props.Count; ++i) {
-                System.Reflection.PropertyInfo prop = m_Props[i]; 
-				if (prop.CanRead && prop.CanWrite)
-					FilePathMgr.Instance.ReadProperty(stream, prop, this);
-            }
+			if (!ReadValue (this.stream))
+				return false;
+			
             stream = null;
 
             return true;
         }
+
+		// 使用工具对继承的类进行反射，然后生成这部分代码，
+		// 不使用反射来做（为了性能）
+		// 默认情况使用反射来处理，后面类继承这个方法，工具生成这个代码
+		// 后面一定要用工具生成代码，减少反射（因为是正式游戏运行时使用）
+		public virtual bool ReadValue(Stream stream)
+		{
+			if (stream == null)
+				return false;
+			if (!InitPropertys())
+				return false;
+
+			var m_Props = this.Propertys;
+			for (int i = 0; i < m_Props.Count; ++i) {
+				System.Reflection.PropertyInfo prop = m_Props[i]; 
+				if (prop.CanRead && prop.CanWrite)
+					FilePathMgr.Instance.ReadProperty(stream, prop, this);
+			}
+			return true;
+		}
 
         ///   <summary>   
         ///   写入用反射，读取不会使用，

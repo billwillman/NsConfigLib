@@ -242,6 +242,16 @@ namespace NsLib.Config {
 			return m_OffsetMap.ContainsKey (key);
 		}
 
+		private ConfigOffset GetConfigOffset(K key)
+		{
+			if (m_OffsetMap == null || m_OffsetMap.Count <= 0)
+				return null;
+			ConfigOffset ret;
+			if (!m_OffsetMap.TryGetValue (key, out ret))
+				ret = null;
+			return ret;
+		}
+
         // 尽量少用这个方法，因为这样会导致配置全加载
         public List<V> ValueList {
             get {
@@ -310,6 +320,8 @@ namespace NsLib.Config {
             if (m_Map == null)
                 return false;
 			bool ret = m_Map.ContainsKey(key);
+			if (!ret)
+				ret = OffsetContains (key);
 			return ret;
         }
 
