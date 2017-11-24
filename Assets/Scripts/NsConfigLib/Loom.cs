@@ -105,16 +105,20 @@ public class Loom : MonoBehaviour {
             _currentActions.AddRange(_actions);
             _actions.Clear();
         }
-        foreach (var a in _currentActions) {
+        for (int i = 0; i < _currentActions.Count; ++i) {
+            var a = _currentActions[i];
             a();
         }
         lock (_delayed) {
             _currentDelayed.Clear();
             _currentDelayed.AddRange(_delayed.Where(d => d.time <= Time.time));
-            foreach (var item in _currentDelayed)
+            for (int i = 0; i < _currentDelayed.Count; ++i) {
+                var item = _currentDelayed[i];
                 _delayed.Remove(item);
+            }
         }
-        foreach (var delayed in _currentDelayed) {
+        for (int i = 0; i < _currentDelayed.Count; ++i) {
+            var delayed = _currentDelayed[i];
             delayed.action();
         }
 

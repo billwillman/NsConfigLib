@@ -87,15 +87,42 @@ public class TestListConfig: MonoBehaviour {
                 ConfigWrap.ToObjectListAsync<string, TaskTalkCfg>(m_Stream,
                     m_TaskDict, this, false, OnReadEnd);
             }
+
+            if (GUI.Button(new Rect(850, 150, 150, 50), "多线程异步全读取"))
+            {
+                m_Stream = new MemoryStream(m_Binary.bytes);
+                m_StartTime = Time.realtimeSinceStartup;
+                m_ThreadDone = false;
+                m_StartTime = Time.realtimeSinceStartup;
+                Loom.RunAsync(
+                    ()=> {
+                        m_ThreadDone = ConfigWrap.ToObjectListThreadAsyncc<string, TaskTalkCfg>(m_Stream,
+                            m_TaskDict, true, null);
+                    });
+
+               
+            }
+
         }
     }
+
+    private bool m_ThreadDone = false;
 
     private float m_StartTime = 0f;
     private void OnReadEnd(IDictionary map) {
         float delta = Time.realtimeSinceStartup - m_StartTime;
         Debug.LogFormat("异步读取完成消耗：{0}", delta.ToString());
+        m_ThreadDone = false;
     }
 
-  
+    private void Update() {
+        Loom.QueueOnMainThread(() => {
+            if (m_ThreadDone) {
+                OnReadEnd(null);
+            }
+        });
+    }
+
+
     private static readonly string _cTaskListFileName = "TaskTalkCfg_Binary";
 }
