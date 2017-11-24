@@ -277,6 +277,100 @@ namespace NsLib.Config {
                 m_EndFrame = new UnityEngine.WaitForEndOfFrame();
         }
 
+        private static bool DoLoadThreadAsync(IDictionary maps,
+            ConfigValueType valueType, Action<float> onProcess, int maxAsyncReadCnt) {
+            if (maps == null || maps.Count <= 0)
+                return false;
+
+            int curCnt = 0;
+            int idx = 0;
+            if (valueType == ConfigValueType.cvObject) {
+                var iter = maps.GetEnumerator();
+                while (iter.MoveNext()) {
+                    IConfigBase config = iter.Value as IConfigBase;
+                    if (!config.StreamSeek())
+                        continue;
+                    config.ReadValue();
+
+                    if (onProcess != null) {
+                        ++idx;
+                        float process = 0.5f + (float)idx / (float)maps.Count;
+                        onProcess(process);
+                    }
+
+                    ++curCnt;
+                    if (curCnt >= maxAsyncReadCnt) {
+                        curCnt = 0;
+                        InitEndFrame();
+                        System.Threading.Thread.Sleep(1);
+                    }
+                }
+                iter.DisposeIter();
+            } else if (valueType == ConfigValueType.cvList) {
+                var iter = maps.GetEnumerator();
+                while (iter.MoveNext()) {
+                    IList vs = iter.Value as IList;
+                    IConfigBase v = vs[0] as IConfigBase;
+                    if (!v.StreamSeek())
+                        continue;
+                    for (int i = 0; i < vs.Count; ++i) {
+                        v = vs[i] as IConfigBase;
+                        v.ReadValue();
+
+                        ++curCnt;
+                        if (curCnt >= maxAsyncReadCnt) {
+                            curCnt = 0;
+                            InitEndFrame();
+                            System.Threading.Thread.Sleep(1);
+                        }
+                    }
+
+                    if (onProcess != null) {
+                        ++idx;
+                        float process = 0.5f + (float)idx / (float)maps.Count;
+                        onProcess(process);
+                    }
+
+                }
+                iter.DisposeIter();
+            } else if (valueType == ConfigValueType.cvMap) {
+                // 字典类型
+                var iter = maps.GetEnumerator();
+                while (iter.MoveNext()) {
+                    IDictionary map = iter.Value as IDictionary;
+                    var subIter = map.GetEnumerator();
+                    if (subIter.MoveNext()) {
+                        IConfigBase v = subIter.Value as IConfigBase;
+                        if (!v.StreamSeek())
+                            continue;
+                        v.ReadValue();
+                        while (subIter.MoveNext()) {
+                            v = subIter.Value as IConfigBase;
+                            v.ReadValue();
+
+                            ++curCnt;
+                            if (curCnt >= maxAsyncReadCnt) {
+                                curCnt = 0;
+                                InitEndFrame();
+                                System.Threading.Thread.Sleep(1);
+                            }
+                        }
+                    }
+                    subIter.DisposeIter();
+
+                    if (onProcess != null) {
+                        ++idx;
+                        float process = 0.5f + (float)idx / (float)maps.Count;
+                        onProcess(process);
+                    }
+
+                }
+                iter.DisposeIter();
+            }
+
+            return true;
+        }
+
         private static IEnumerator StartLoadCortine(IDictionary maps,
             ConfigValueType valueType, Action<float> onProcess, int maxAsyncReadCnt) {
             if (maps == null || maps.Count <= 0)
@@ -369,6 +463,59 @@ namespace NsLib.Config {
             }
         }
 
+        // 多线程调用
+        private static bool _ToObjectThreadAsync<K, V>(Stream stream, Dictionary<K, V> maps,
+            bool isLoadAll = false,
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 200) where V : ConfigBase<K>, new() {
+
+            if (stream == null || maps == null)
+                return false;
+
+            maps.Clear();
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild)
+                return false;
+
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvObject) {
+                return false;
+            }
+
+            int curCnt = 0;
+            for (uint i = 0; i < header.Count; ++i) {
+                V config = new V();
+                config.stream = stream;
+                K key = config.ReadKey();
+                config.dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                if (maps == null)
+                    maps = new Dictionary<K, V>((int)header.Count);
+                maps[key] = config;
+
+                ++curCnt;
+                if (curCnt >= maxAsyncReadCnt) {
+                    curCnt = 0;
+                    InitEndFrame();
+                    System.Threading.Thread.Sleep(1);
+                }
+            }
+
+            bool ret = true;
+            if (isLoadAll && maps.Count > 0) {
+                ret = DoLoadThreadAsync(maps, valueType, onProcess, maxAsyncReadCnt);
+                stream.Close();
+                stream.Dispose();
+                ConfigStringKey.ClearPropertys(typeof(V));
+            }
+
+            if (onOK != null)
+                onOK(maps);
+
+            return ret;
+        }
+
         private static IEnumerator _ToObjectAsync<K, V>(Stream stream, Dictionary<K, V> maps,
             bool isLoadAll = false,
             Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
@@ -416,6 +563,15 @@ namespace NsLib.Config {
 
             if (onOK != null)
                 onOK(maps);
+        }
+
+        public static bool ToObjectThreadAsync<K, V>(Stream stream,
+            Dictionary<K, V> maps, bool isLoadAll = false,
+            Action<IDictionary> onOk = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
+            if (stream == null || maps == null)
+                return false;
+
+            return _ToObjectThreadAsync<K, V>(stream, maps, isLoadAll, onOk, onProcess, maxAsyncReadCnt);
         }
 
         public static UnityEngine.Coroutine ToObjectAsync<K, V>(Stream stream,
@@ -667,6 +823,79 @@ namespace NsLib.Config {
         }
 #endif
 
+        private static bool _ToObjectListThreadAsync<K, V>(Stream stream,
+            Dictionary<K, List<V>> maps, bool isLoadAll = false,
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
+
+            if (stream == null || maps == null) {
+                return false;
+            }
+
+            maps.Clear();
+
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild) {
+                return false;
+            }
+
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvList) {
+                return false;
+            }
+
+            int curCnt = 0;
+            for (uint i = 0; i < header.Count; ++i) {
+                V config = new V();
+                config.stream = stream;
+                K key = config.ReadKey();
+                long dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                config.dataOffset = dataOffset;
+                int listCnt = FilePathMgr.Instance.ReadInt(stream);
+                if (maps == null)
+                    maps = new Dictionary<K, List<V>>((int)header.Count);
+                List<V> vs = new List<V>(listCnt);
+                maps[key] = vs;
+                vs.Add(config);
+                for (int j = 1; j < listCnt; ++j) {
+                    config = new V();
+                    config.stream = stream;
+                    config.dataOffset = dataOffset;
+                    vs.Add(config);
+
+                    ++curCnt;
+                    if (curCnt >= maxAsyncReadCnt) {
+                        curCnt = 0;
+                        InitEndFrame();
+                        System.Threading.Thread.Sleep(1);
+                    }
+                }
+
+                if (onProcess != null) {
+                    float delta = isLoadAll ? 0.5f : 1f;
+                    float process = ((float)i / (float)header.Count) * delta;
+                    onProcess(process);
+                }
+
+            }
+
+            bool ret = true;
+            if (isLoadAll && maps.Count > 0) {
+                ret = DoLoadThreadAsync(maps, valueType, onProcess, maxAsyncReadCnt);
+                stream.Close();
+                stream.Dispose();
+                ConfigStringKey.ClearPropertys(typeof(V));
+            }
+
+            if (onOK != null)
+                onOK(maps);
+
+            return ret;
+        }
+
+
         private static IEnumerator _ToObjectListAsync<K, V>(Stream stream, 
             Dictionary<K, List<V>> maps, bool isLoadAll = false,
             Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
@@ -745,12 +974,97 @@ namespace NsLib.Config {
             return mono.StartCoroutine(_ToObjectListAsync<K, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
         }
 
+        public static bool ToObjectListThreadAsyncc<K, V>(Stream stream,
+            Dictionary<K, List<V>> maps, bool isLoadAll = false,
+            Action<IDictionary> onOK = null, Action<float> onProcess = null,
+            int maxAsyncReadCnt = 500) where V : ConfigBase<K>, new() {
+            if (stream == null || maps == null)
+                return false;
+            return _ToObjectListThreadAsync<K, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt);
+        }
+
+        public static bool ToObjectMapThreadAsync<K1, K2, V>(Stream stream,
+            Dictionary<K1, Dictionary<K2, V>> maps, bool isLoadAll = false,
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2>, new() {
+            if (stream == null || maps == null)
+                return false;
+            return _ToObjectMapThreadAsync<K1, K2, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt);
+        }
+
         public static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
             Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2>, new() {
             if (stream == null || maps == null || mono == null)
                 return null;
             return mono.StartCoroutine(_ToObjectMapAsync<K1, K2, V>(stream, maps, isLoadAll, onOK, onProcess, maxAsyncReadCnt));
+        }
+
+        private static bool _ToObjectMapThreadAsync<K1, K2, V>(Stream stream,
+            Dictionary<K1, Dictionary<K2, V>> maps, bool isLoadAll = false,
+            Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2>, new() {
+
+            if (stream == null || maps == null) {
+                return false;
+            }
+
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild) {
+                return false;
+            }
+
+            maps.Clear();
+
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvMap) {
+                return false;
+            }
+
+            int curCnt = 0;
+            System.Type keyType1 = typeof(K1);
+            //   System.Type keyType2 = typeof(K2);
+            //    System.Type subDictType = typeof(Dictionary<K2, V>);
+            for (uint i = 0; i < header.Count; ++i) {
+                System.Object key1 = FilePathMgr.Instance.ReadObject(stream, keyType1);
+                long dataOffset = FilePathMgr.Instance.ReadLong(stream);
+                int DictCnt = FilePathMgr.Instance.ReadInt(stream);
+                if (DictCnt > 0) {
+                    Dictionary<K2, V> subMap = new Dictionary<K2, V>();
+                    for (int j = 0; j < DictCnt; ++j) {
+                        V config = new V();
+                        config.stream = stream;
+                        config.dataOffset = dataOffset;
+                        K2 key2 = config.ReadKey();
+                        subMap[(K2)key2] = config;
+
+                        ++curCnt;
+                        if (curCnt >= maxAsyncReadCnt) {
+                            curCnt = 0;
+                            InitEndFrame();
+                            System.Threading.Thread.Sleep(1);
+                        }
+                    }
+
+
+                    if (subMap != null && subMap.Count > 0) {
+                        maps[((K1)key1)] = subMap;
+                    }
+                }
+            }
+
+            bool ret = true;
+            if (isLoadAll && maps.Count > 0) {
+                ret = DoLoadThreadAsync(maps, valueType, onProcess, maxAsyncReadCnt);
+                stream.Close();
+                stream.Dispose();
+                ConfigStringKey.ClearPropertys(typeof(V));
+            }
+
+            if (onOK != null)
+                onOK(maps);
+            return ret;
         }
 
         private static IEnumerator _ToObjectMapAsync<K1, K2, V>(Stream stream,
