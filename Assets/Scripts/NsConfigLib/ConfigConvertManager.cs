@@ -68,7 +68,11 @@ namespace NsLib.Config {
             string newFileName = string.Format("{0}/{1}.bytes", Path.GetDirectoryName(fileName), info.convertName);
             FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
             try {
-                ConfigWrap.ToStream(stream, values);
+                try {
+                    ConfigWrap.ToStream(stream, values);
+                } catch (Exception e) {
+                    UnityEngine.Debug.LogErrorFormat("【转换异常】{0}=>{1}", fileName, e.ToString());
+                }
             } finally {
                 stream.Flush();
                 stream.Close();
