@@ -33,6 +33,12 @@ namespace NsLib.Config {
         private static Dictionary<System.Type, List<System.Reflection.PropertyInfo>> m_PropsMap = new Dictionary<Type, List<System.Reflection.PropertyInfo>>();
         private List<System.Reflection.PropertyInfo> _Propertys = null;
 
+        public static void ClearPropsMap() {
+            if (m_PropsMap == null)
+                return;
+            m_PropsMap.Clear();
+        }
+
         protected List<System.Reflection.PropertyInfo> Propertys {
             get {
                 if (_Propertys == null) {
