@@ -188,6 +188,8 @@ namespace NsLib.Config {
         // 重新编译配置Convert表
         public static void BuildConfigConvert() {
             ClearConvertMaps();
+			// 清理掉所以定义
+            ConfigStringKey.ClearPropsMap();
 
             Assembly asm = Assembly.GetExecutingAssembly();
             System.Type[] types = asm.GetTypes();
