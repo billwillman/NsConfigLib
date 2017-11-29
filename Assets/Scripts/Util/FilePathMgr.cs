@@ -46,7 +46,7 @@ namespace Utils
 			if (stream == null)
 				return false;
 
-			int high = (int)((ulong)value & 0xFFFFFFFF00000000) >> 32;
+			int high = (int)(((ulong)value & 0xFFFFFFFF00000000) >> 32);
 			int low = (int)((ulong)value & 0xFFFFFFFF);
 			bool ret = WriteInt(stream, low);
 			if (!ret)
@@ -113,8 +113,8 @@ namespace Utils
 		public long ReadLong(Stream stream)
 		{
 			long low = ReadInt(stream);
-			long high = ReadInt(stream);
-			long ret = (high << 32) | low;
+            long high = ReadInt(stream);
+            long ret = (long)((((ulong)(high << 32)) & 0xFFFFFFFF00000000) | ((ulong)(low & 0xFFFFFFFF)));
 			return ret;
 		}
 
@@ -341,7 +341,7 @@ namespace Utils
 				return string.Empty;
 
             byte[] bytes;
-            if (m_TempStrBuf == null || cnt > m_TempStrBuf.Length) {
+            if (cnt > m_TempStrBuf.Length) {
 				bytes = new byte[cnt];
             } else
                 bytes = m_TempStrBuf;
@@ -351,6 +351,31 @@ namespace Utils
 
         public static int InitHashValue() {
             return _cHash;
+        }
+		
+		public static void HashCode(ref int hash, bool value) {
+            byte v = value ? (byte)1: (byte)0;
+            HashCode(ref hash, v);
+        }
+
+        public static void HashCode(ref int hash, short value) {
+            int v = value & 0xFF;
+            HashCode(ref hash, (byte)v);
+
+            v = (value >> 8) & 0xFF;
+            HashCode(ref hash, (byte)v);
+        }
+
+        public static void HashCode(ref int hash, ushort value) {
+            HashCode(ref hash, (ushort)value);
+        }
+
+        public static void HashCode(ref int hash, char value) {
+            HashCode(ref hash, (byte)value);
+        }
+
+        public static void HashCode(ref int hash, uint value) {
+            HashCode(ref hash, (int)value);
         }
 
         public static void HashCode(ref int hash, byte value) {
