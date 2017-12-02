@@ -25,6 +25,12 @@ namespace NsLib.Config {
             set;
         }
 
+        public bool IsSplitFile {
+            get {
+                return string.Compare(version, _SplitVersion) == 0;
+            }
+        }
+
         public bool IsVaild {
             get {
                 return flag == _Flag && indexOffset > 0;
