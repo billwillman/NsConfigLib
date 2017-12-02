@@ -51,6 +51,34 @@ namespace NsLib.Config {
             }
         }
 
+        public static void ConvertToBinarySplitFile(string fileName, string configName, string json,
+            int maxSplitCnt = 50) {
+            if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(json))
+                return;
+
+            ConvertClassInfo info = GetConvertClass(configName);
+            if (info == null || info.DictionaryType == null)
+                return;
+
+            System.Collections.IDictionary values = LitJsonHelper.ToTypeObject(json, info.DictionaryType) as System.Collections.IDictionary;
+            if (values == null)
+                return;
+
+            string newFileName = string.Format("{0}/{1}.bytes", Path.GetDirectoryName(fileName), info.convertName);
+            FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
+            try {
+                try {
+                    ConfigWrap.ToStreamSplit(stream, newFileName, values, maxSplitCnt);
+                } catch (Exception e) {
+                    UnityEngine.Debug.LogErrorFormat("【转换异常】{0}=>{1}", fileName, e.ToString());
+                }
+            } finally {
+                stream.Flush();
+                stream.Close();
+                stream.Dispose();
+            }
+        }
+
         // LitJson转换成自定义格式
         public static void ConvertToBinaryFile(string fileName, string configName, string json) {
 

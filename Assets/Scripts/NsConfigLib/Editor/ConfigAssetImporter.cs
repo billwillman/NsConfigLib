@@ -22,9 +22,26 @@ namespace NsLib.Config
                     string ext = Path.GetExtension (assetFileName);
                     if (string.Compare (ext, ".txt") == 0) {
                         ProcessConfigConvert (assetFileName);
+                        //ProcessConfigConvert(assetFileName, 50);
                     }
                 }
             }
+        }
+
+        [MenuItem("Assets/生成拆分二进制配置表")]
+        public static void ProcessConfigConvertCmd() {
+            if (Selection.activeObject == null)
+                return;
+            string assetFileName = AssetDatabase.GetAssetPath(Selection.activeObject);
+            if (string.IsNullOrEmpty(assetFileName))
+                return;
+
+            string ext = Path.GetExtension(assetFileName);
+            if (string.Compare(ext, ".txt") != 0)
+                return;
+
+            TestBuildConfigConvertMap();
+            ProcessConfigConvert(assetFileName, 50);
         }
 
         private static bool IsContainConfigFiles(string[] importedAsset) {
@@ -42,7 +59,7 @@ namespace NsLib.Config
         }
 
 
-        private static void ProcessConfigConvert(string fileName)
+        private static void ProcessConfigConvert(string fileName, int maxSplitCnt = -1)
         {
             string configName = Path.GetFileNameWithoutExtension (fileName);
             if (string.IsNullOrEmpty(configName))
@@ -59,7 +76,10 @@ namespace NsLib.Config
                 string json = System.Text.Encoding.UTF8.GetString(buffer);
                 if (string.IsNullOrEmpty(json))
                     return;
-                ConfigConvertManager.ConvertToBinaryFile(fileName, configName, json);
+                if (maxSplitCnt <= 0)
+                    ConfigConvertManager.ConvertToBinaryFile(fileName, configName, json);
+                else
+                    ConfigConvertManager.ConvertToBinarySplitFile(fileName, configName, json);
             } finally {
                 srcStream.Close();
                 srcStream.Dispose();

@@ -19,6 +19,7 @@ namespace NsLib.Config {
     public static class ConfigWrap {
 
         public enum ConfigValueType {
+            cvNone = -1,
             cvObject = 0,
             cvList = 1,
             cvMap = 2
@@ -1261,21 +1262,112 @@ namespace NsLib.Config {
             return maps;
         }
 
-        internal static bool ToStream(Stream stream, System.Collections.IDictionary values) {
+        private static ConfigValueType GetConfigValueType(System.Collections.IDictionary values) {
+            if (values == null || values.Count <= 0)
+                return ConfigValueType.cvNone;
+            var iter = values.GetEnumerator();
+            ConfigValueType valueType = ConfigValueType.cvObject;
+            try {
+                if (!iter.MoveNext()) {
+                    return ConfigValueType.cvNone;
+                }
+                IList vs = iter.Value as IList;
+                IDictionary subMap = iter.Value as IDictionary;
+                if (vs != null) {
+                    valueType = ConfigValueType.cvList;
+                } else if (subMap != null) {
+                    valueType = ConfigValueType.cvMap;
+                } else {
+                    valueType = ConfigValueType.cvObject;
+                }
+            } finally {
+                iter.DisposeIter();
+            }
+
+            return valueType;
+        }
+
+        private static bool DataToSplitFile(string fileName, System.Collections.IDictionary values, int maxSplitCnt) {
+            if (string.IsNullOrEmpty(fileName) || values == null || values.Count <= 0 || maxSplitCnt <= 0)
+                return false;
+            bool ret = false;
+            string name = Path.GetFileNameWithoutExtension(fileName);
+            name = string.Format("{0}/{1}", Path.GetDirectoryName(fileName), name);
+            var iter = values.GetEnumerator();
+            int idx = 0;
+            while (iter.MoveNext()) {
+                string newFileName = string.Format("{0}_{1:D}.bytes", name, idx);
+                FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
+                try {
+                    bool r = DataToSplitStream(stream, iter, maxSplitCnt);
+                    if (r)
+                        ret = true;
+                    else {
+                        if (!ret)
+                            return false;
+                        break;
+                    }
+                } finally {
+                    stream.Close();
+                    stream.Dispose();
+                }
+                ++idx;
+            }
+            return ret;
+        }
+
+        private static bool DataToSplitStream(Stream stream,
+            System.Collections.IDictionaryEnumerator iter, int maxSplitCnt) {
+            if (stream == null || maxSplitCnt <= 0)
+                return false;
+            for (int j = 0; j < maxSplitCnt; ++j) {
+                IList vs = iter.Value as IList;
+                IDictionary subMap = iter.Value as IDictionary;
+                if (vs != null) {
+                    long dataOffset = stream.Position;
+                    for (int i = 0; i < vs.Count; ++i) {
+                        IConfigBase v = vs[i] as IConfigBase;
+                        v.stream = stream;
+                        v.dataOffset = dataOffset;
+                        v.WriteValue();
+                    }
+                } else if (subMap != null) {
+                    long dataOffset = stream.Position;
+                    var subIter = subMap.GetEnumerator();
+                    while (subIter.MoveNext()) {
+                        IConfigBase v = subIter.Value as IConfigBase;
+                        v.stream = stream;
+                        v.dataOffset = dataOffset;
+                        v.WriteValue();
+                    }
+                } else {
+                    // 普通对象类型
+                    //  valueType = ConfigValueType.cvObject;
+                    IConfigBase v = iter.Value as IConfigBase;
+                    v.stream = stream;
+                    v.dataOffset = stream.Position;
+                    v.WriteValue();
+                }
+
+                if (!iter.MoveNext())
+                    return false;
+            }
+
+            return true;
+        }
+
+        // 将数据转到Stream
+        private static bool DataToStream(Stream stream, System.Collections.IDictionary values) {
             if (stream == null || values == null || values.Count <= 0)
                 return false;
 
-            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
-            header.SaveToStream(stream);
-
             var iter = values.GetEnumerator();
-            ConfigValueType valueType = ConfigValueType.cvObject;
             while (iter.MoveNext()) {
                 IList vs = iter.Value as IList;
                 IDictionary subMap = iter.Value as IDictionary;
                 if (vs != null) {
                     // 说明是List
-                    valueType = ConfigValueType.cvList;
+                  //  valueType = ConfigValueType.cvList;
                     long dataOffset = stream.Position;
                     for (int i = 0; i < vs.Count; ++i) {
                         IConfigBase v = vs[i] as IConfigBase;
@@ -1285,7 +1377,7 @@ namespace NsLib.Config {
                     }
                 } else if (subMap != null) {
                     // 字典类型
-                    valueType = ConfigValueType.cvMap;
+                //    valueType = ConfigValueType.cvMap;
                     long dataOffset = stream.Position;
                     var subIter = subMap.GetEnumerator();
                     while (subIter.MoveNext()) {
@@ -1297,7 +1389,7 @@ namespace NsLib.Config {
                     subIter.DisposeIter();
                 } else {
                     // 普通对象类型
-                    valueType =  ConfigValueType.cvObject;
+                  //  valueType = ConfigValueType.cvObject;
                     IConfigBase v = iter.Value as IConfigBase;
                     v.stream = stream;
                     v.dataOffset = stream.Position;
@@ -1305,10 +1397,16 @@ namespace NsLib.Config {
                 }
             }
             iter.DisposeIter();
+            return true;
+        }
 
-            long indexOffset = stream.Position;
-            stream.WriteByte((byte)valueType);
+        private static void IndexToStream(Stream stream, System.Collections.IDictionary values, 
+            ConfigValueType valueType) {
+            if (stream == null || values == null || values.Count <= 0 ||
+                valueType == ConfigValueType.cvNone)
+                return;
 
+            var iter = values.GetEnumerator();
             if (valueType == ConfigValueType.cvList) {
                 iter = values.GetEnumerator();
                 while (iter.MoveNext()) {
@@ -1316,6 +1414,7 @@ namespace NsLib.Config {
                     IList vs = iter.Value as IList;
                     if (vs != null) {
                         IConfigBase v = vs[0] as IConfigBase;
+                        v.stream = stream;
                         v.WriteKey(key);
                         // 偏移
                         FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
@@ -1335,6 +1434,7 @@ namespace NsLib.Config {
                         // 取出第一个
                         if (subIter.MoveNext()) {
                             IConfigBase v = subIter.Value as IConfigBase;
+                            v.stream = stream;
                             FilePathMgr.Instance.WriteObject(stream, key, v.GetKeyType());
                             // 偏移
                             FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
@@ -1358,11 +1458,69 @@ namespace NsLib.Config {
                 while (iter.MoveNext()) {
                     System.Object key = iter.Key;
                     IConfigBase v = iter.Value as IConfigBase;
+                    v.stream = stream;
                     v.WriteKey(key);
                     FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
                 }
                 iter.DisposeIter();
             }
+        }
+
+        // 带拆分功能的
+        // maxSplitCnt为分离数据量
+        internal static bool ToStreamSplit(Stream stream, string fileName, 
+            System.Collections.IDictionary values, int maxSplitCnt = 50) {
+            if (stream == null || values == null || values.Count <= 0)
+                return false;
+            if (maxSplitCnt <= 0)
+                return ToStream(stream, values);
+
+            // 写入索引
+            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
+            header.SaveToStream(stream);
+
+            // 拆解文件
+            if (!DataToSplitFile(fileName, values, maxSplitCnt))
+                return false;
+
+            var valueType = GetConfigValueType(values);
+            if (valueType == ConfigValueType.cvNone)
+                return false;
+
+            long indexOffset = stream.Position;
+            stream.WriteByte((byte)valueType);
+
+            // 写入索引数据
+            IndexToStream(stream, values, valueType);
+
+            // 重写Header
+            header.indexOffset = indexOffset;
+            header.SeekFileToHeader(stream);
+            header.SaveToStream(stream);
+
+            return true;
+        }
+
+        internal static bool ToStream(Stream stream, System.Collections.IDictionary values) {
+            if (stream == null || values == null || values.Count <= 0)
+                return false;
+
+            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
+            header.SaveToStream(stream);
+
+            // 写入数据行
+            if (!DataToStream(stream, values))
+                return false;
+
+            var valueType = GetConfigValueType(values);
+            if (valueType == ConfigValueType.cvNone)
+                return false;
+
+            long indexOffset = stream.Position;
+            stream.WriteByte((byte)valueType);
+
+            // 写入索引数据
+            IndexToStream(stream, values, valueType);
 
             // 重写Header
             header.indexOffset = indexOffset;
