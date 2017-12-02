@@ -1292,7 +1292,12 @@ namespace NsLib.Config {
                 return false;
             bool ret = false;
             string name = Path.GetFileNameWithoutExtension(fileName);
-            name = string.Format("{0}/{1}", Path.GetDirectoryName(fileName), name);
+            string dirName = Path.GetDirectoryName(fileName);
+            string newDir = string.Format("{0}/@{1}", dirName, name);
+            if (!Directory.Exists(newDir))
+                Directory.CreateDirectory(newDir);
+            name = string.Format("{0}/{1}", newDir, name);
+            
             var iter = values.GetEnumerator();
             int idx = 0;
             while (iter.MoveNext()) {
