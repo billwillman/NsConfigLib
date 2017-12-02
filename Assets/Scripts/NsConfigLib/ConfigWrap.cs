@@ -1401,11 +1401,12 @@ namespace NsLib.Config {
         }
 
         private static void IndexToStream(Stream stream, System.Collections.IDictionary values, 
-            ConfigValueType valueType) {
+            ConfigValueType valueType, int maxSplitCnt = -1) {
             if (stream == null || values == null || values.Count <= 0 ||
                 valueType == ConfigValueType.cvNone)
                 return;
 
+            int cnt = 0;
             var iter = values.GetEnumerator();
             if (valueType == ConfigValueType.cvList) {
                 iter = values.GetEnumerator();
@@ -1420,7 +1421,10 @@ namespace NsLib.Config {
                         FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
                         // 数量
                         FilePathMgr.Instance.WriteInt(stream, vs.Count);
+                        if (maxSplitCnt > 0)
+                            FilePathMgr.Instance.WriteInt(stream, cnt % maxSplitCnt);
                     }
+                    ++cnt;
                 }
                 iter.DisposeIter();
             } else if (valueType == ConfigValueType.cvMap) {
@@ -1440,6 +1444,8 @@ namespace NsLib.Config {
                             FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
                             // 数量
                             FilePathMgr.Instance.WriteInt(stream, vs.Count);
+                            if (maxSplitCnt > 0)
+                                FilePathMgr.Instance.WriteInt(stream, cnt % maxSplitCnt);
 
                             System.Object key2 = subIter.Key;
                             v.WriteKey(key2);
@@ -1450,6 +1456,7 @@ namespace NsLib.Config {
                         }
                         subIter.DisposeIter();
                     }
+                    ++cnt;
                 }
                 iter.DisposeIter();
 
@@ -1461,6 +1468,10 @@ namespace NsLib.Config {
                     v.stream = stream;
                     v.WriteKey(key);
                     FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
+                    if (maxSplitCnt > 0)
+                        FilePathMgr.Instance.WriteInt(stream, cnt % maxSplitCnt);
+
+                    ++cnt;
                 }
                 iter.DisposeIter();
             }
@@ -1491,7 +1502,7 @@ namespace NsLib.Config {
             stream.WriteByte((byte)valueType);
 
             // 写入索引数据
-            IndexToStream(stream, values, valueType);
+            IndexToStream(stream, values, valueType, maxSplitCnt);
 
             // 重写Header
             header.indexOffset = indexOffset;
