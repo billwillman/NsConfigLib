@@ -36,10 +36,13 @@ namespace NsLib.Config {
             private set;
         }
 
-        public ConfigFileHeader(uint cnt, long indexOffset) {
+        public ConfigFileHeader(uint cnt, long indexOffset, bool isSplit = false) {
             this.Count = cnt;
             this.flag = _Flag;
-            this.version = _CurrentVersion;
+            if (isSplit)
+                this.version = _SplitVersion;
+            else
+                this.version = _AllVersion;
             this.indexOffset = indexOffset;
         }
 
@@ -75,7 +78,8 @@ namespace NsLib.Config {
             return true;
         }
 
-        private static readonly ushort _CurrentVersion = 1;
+        private static readonly ushort _AllVersion = 1;
+        private static readonly ushort _SplitVersion = 2;
         private static readonly ushort _Flag = 0xFEFE;
     }
 

@@ -1476,7 +1476,7 @@ namespace NsLib.Config {
                 return ToStream(stream, values);
 
             // 写入索引
-            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
+            ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0, true);
             header.SaveToStream(stream);
 
             // 拆解文件
