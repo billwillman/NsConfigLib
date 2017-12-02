@@ -41,7 +41,7 @@ namespace NsLib.Config
                 return;
 
             TestBuildConfigConvertMap();
-            ProcessConfigConvert(assetFileName, 50);
+            ProcessConfigConvert(assetFileName, 100);
         }
 
         private static bool IsContainConfigFiles(string[] importedAsset) {
@@ -79,7 +79,7 @@ namespace NsLib.Config
                 if (maxSplitCnt <= 0)
                     ConfigConvertManager.ConvertToBinaryFile(fileName, configName, json);
                 else
-                    ConfigConvertManager.ConvertToBinarySplitFile(fileName, configName, json);
+                    ConfigConvertManager.ConvertToBinarySplitFile(fileName, configName, json, maxSplitCnt);
             } finally {
                 srcStream.Close();
                 srcStream.Dispose();
