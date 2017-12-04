@@ -96,6 +96,8 @@ namespace NsLib.Config {
                 data.Index = index;
                 data.Offset = offset;
                 data.Count = cnt;
+                if (m_IndexDataMap == null)
+                    m_IndexDataMap = new Dictionary<K, IndexFileData>();
                 m_IndexDataMap[key] = data;
             }
         }
@@ -110,6 +112,8 @@ namespace NsLib.Config {
                 data.Index = index;
                 data.Offset = offset;
                 data.Count = cnt;
+                if (m_IndexDataMap == null)
+                    m_IndexDataMap = new Dictionary<K, IndexFileData>();
                 m_IndexDataMap[key] = data;
             }
         }

@@ -13,6 +13,9 @@ namespace NsLib.Config {
 
     public class ResourcesConfigDataStream: IConfigDataStream {
         public Stream LoadConfigDataFromFile(string fileName) {
+            int idx = fileName.LastIndexOf('.');
+            if (idx >= 0)
+                fileName = fileName.Substring(0, idx);
             UnityEngine.TextAsset textAsset = UnityEngine.Resources.Load<UnityEngine.TextAsset>(fileName);
             MemoryStream stream = new MemoryStream(textAsset.bytes);
             return stream;
@@ -99,8 +102,8 @@ namespace NsLib.Config {
             Stream stream = m_DataStream.LoadConfigDataFromFile(fileName);
             if (stream == null || !stream.CanRead)
                 return false;
-            m_Name = Path.GetFileNameWithoutExtension(fileName).ToLower();
-            m_Dir = Path.GetDirectoryName(fileName).ToLower();
+            m_Name = Path.GetFileNameWithoutExtension(fileName);
+            m_Dir = Path.GetDirectoryName(fileName);
             return LoadFromStream(stream);
         }
 
@@ -171,7 +174,12 @@ namespace NsLib.Config {
                         !indexData.IsVaild)
                         return false;
 
-                    string fileName = string.Format("{0}/{1}_{2:D}.bytes", m_Dir, m_Name, indexData.Index);
+                    string fileName;
+                    if (!string.IsNullOrEmpty(m_Dir))
+                        fileName = string.Format("{0}/@{1}/{1}_{2:D}.bytes", m_Dir, m_Name, indexData.Index);
+                    else
+                        fileName = string.Format("@{0}/{0}_{1:D}.bytes", m_Name, indexData.Index);
+
                     if (!LoadDataFromFile(fileName))
                         return false;
                     bool ret = m_DataMap.TryGetValue(key, out value);
