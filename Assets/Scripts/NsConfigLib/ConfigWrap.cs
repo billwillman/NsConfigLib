@@ -1325,6 +1325,8 @@ namespace NsLib.Config {
             System.Collections.IDictionaryEnumerator iter, int maxSplitCnt) {
             if (stream == null || maxSplitCnt <= 0)
                 return false;
+
+            int writeCnt = 0;
             for (int j = 0; j < maxSplitCnt; ++j) {
                 IList vs = iter.Value as IList;
                 IDictionary subMap = iter.Value as IDictionary;
@@ -1354,9 +1356,15 @@ namespace NsLib.Config {
                     v.WriteValue();
                 }
 
-                if (!iter.MoveNext())
+                ++writeCnt;
+
+                if (!iter.MoveNext()) {
+                    FilePathMgr.GetInstance().WriteInt(stream, writeCnt);
                     return false;
+                }
             }
+
+            FilePathMgr.GetInstance().WriteInt(stream, writeCnt);
 
             return true;
         }
