@@ -27,7 +27,7 @@ namespace NsLib.Config {
 
         public bool IsSplitFile {
             get {
-                return string.Compare(version, _SplitVersion) == 0;
+                return version == _SplitVersion;
             }
         }
 
