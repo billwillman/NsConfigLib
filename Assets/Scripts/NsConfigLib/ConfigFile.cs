@@ -17,6 +17,8 @@ namespace NsLib.Config {
             if (idx >= 0)
                 fileName = fileName.Substring(0, idx);
             UnityEngine.TextAsset textAsset = UnityEngine.Resources.Load<UnityEngine.TextAsset>(fileName);
+            if (textAsset == null)
+                return null;
             MemoryStream stream = new MemoryStream(textAsset.bytes);
             return stream;
         }
@@ -133,7 +135,7 @@ namespace NsLib.Config {
         protected abstract V ReadItemValue(Stream stream, K key);
 
         private bool LoadDataFromStream(Stream stream) {
-            if (stream == null || !stream.CanRead)
+            if (m_IndexFile == null || stream == null || !stream.CanRead)
                 return false;
             long cntOffset = stream.Length - 4;
             if (cntOffset <= 0)
@@ -146,6 +148,7 @@ namespace NsLib.Config {
             ConfigWrap.ConfigValueType valueType = this.ValueType;
             System.Type tt = typeof(K);
             stream.Seek(0, SeekOrigin.Begin);
+           // int startIndex = FilePathMgr.GetInstance().ReadInt(stream);
             for (int i = 0; i < cnt; ++i) {
                 System.Object key = FilePathMgr.GetInstance().ReadObject(stream, tt);
                 K k = (K)key;

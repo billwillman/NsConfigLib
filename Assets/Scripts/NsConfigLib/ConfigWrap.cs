@@ -1294,8 +1294,9 @@ namespace NsLib.Config {
             string name = Path.GetFileNameWithoutExtension(fileName);
             string dirName = Path.GetDirectoryName(fileName);
             string newDir = string.Format("{0}/@{1}", dirName, name);
-            if (!Directory.Exists(newDir))
-                Directory.CreateDirectory(newDir);
+            if (Directory.Exists(newDir))
+                Directory.Delete(newDir, true);
+            Directory.CreateDirectory(newDir);
             name = string.Format("{0}/{1}", newDir, name);
             
             var iter = values.GetEnumerator();
@@ -1304,7 +1305,7 @@ namespace NsLib.Config {
                 string newFileName = string.Format("{0}_{1:D}.bytes", name, idx);
                 FileStream stream = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
                 try {
-                    bool r = DataToSplitStream(stream, iter, maxSplitCnt);
+                    bool r = DataToSplitStream(stream, iter, maxSplitCnt, maxSplitCnt * idx);
                     if (r)
                         ret = true;
                     else {
@@ -1322,16 +1323,23 @@ namespace NsLib.Config {
         }
 
         private static bool DataToSplitStream(Stream stream,
-            System.Collections.IDictionaryEnumerator iter, int maxSplitCnt) {
+            System.Collections.IDictionaryEnumerator iter, int maxSplitCnt, int startIndex) {
             if (stream == null || maxSplitCnt <= 0)
                 return false;
-
+            System.Object key = iter.Key;
+            if (key == null)
+                return false;
+            // 写入开始索引
+            // FilePathMgr.GetInstance().WriteInt(stream, startIndex);
             int writeCnt = 0;
+            System.Type tt = key.GetType();
             for (int j = 0; j < maxSplitCnt; ++j) {
+                long dataOffset = stream.Position;
+                FilePathMgr.GetInstance().WriteObject(stream, iter.Key, tt);
+
                 IList vs = iter.Value as IList;
                 IDictionary subMap = iter.Value as IDictionary;
                 if (vs != null) {
-                    long dataOffset = stream.Position;
                     for (int i = 0; i < vs.Count; ++i) {
                         IConfigBase v = vs[i] as IConfigBase;
                         v.stream = stream;
@@ -1339,7 +1347,6 @@ namespace NsLib.Config {
                         v.WriteValue();
                     }
                 } else if (subMap != null) {
-                    long dataOffset = stream.Position;
                     var subIter = subMap.GetEnumerator();
                     while (subIter.MoveNext()) {
                         IConfigBase v = subIter.Value as IConfigBase;
@@ -1352,7 +1359,7 @@ namespace NsLib.Config {
                     //  valueType = ConfigValueType.cvObject;
                     IConfigBase v = iter.Value as IConfigBase;
                     v.stream = stream;
-                    v.dataOffset = stream.Position;
+                    v.dataOffset = dataOffset;
                     v.WriteValue();
                 }
 
@@ -1435,7 +1442,7 @@ namespace NsLib.Config {
                         // 数量
                         FilePathMgr.Instance.WriteInt(stream, vs.Count);
                         if (maxSplitCnt > 0)
-                            FilePathMgr.Instance.WriteInt(stream, cnt % maxSplitCnt);
+                            FilePathMgr.Instance.WriteInt(stream, cnt/maxSplitCnt);
                     }
                     ++cnt;
                 }
@@ -1458,7 +1465,7 @@ namespace NsLib.Config {
                             // 数量
                             FilePathMgr.Instance.WriteInt(stream, vs.Count);
                             if (maxSplitCnt > 0)
-                                FilePathMgr.Instance.WriteInt(stream, cnt % maxSplitCnt);
+                                FilePathMgr.Instance.WriteInt(stream, cnt/maxSplitCnt);
 
                             System.Object key2 = subIter.Key;
                             v.WriteKey(key2);
@@ -1481,8 +1488,9 @@ namespace NsLib.Config {
                     v.stream = stream;
                     v.WriteKey(key);
                     FilePathMgr.Instance.WriteLong(stream, v.dataOffset);
-                    if (maxSplitCnt > 0)
-                        FilePathMgr.Instance.WriteInt(stream, cnt % maxSplitCnt);
+                    if (maxSplitCnt > 0) {
+                        FilePathMgr.Instance.WriteInt(stream, cnt/maxSplitCnt);
+                    }
 
                     ++cnt;
                 }

@@ -36,6 +36,22 @@ namespace NsLib.Config {
         private Dictionary<K, IndexFileData> m_IndexDataMap = null;
         private ConfigWrap.ConfigValueType m_ValueType = ConfigWrap.ConfigValueType.cvNone;
 
+        public Dictionary<K, IndexFileData>.KeyCollection IndexDataKeys {
+            get {
+                if (m_IndexDataMap == null)
+                    return null;
+                return m_IndexDataMap.Keys ;
+            }
+        }
+
+        public Dictionary<K, IndexFileData>.ValueCollection IndexDataValues {
+            get {
+                if (m_IndexDataMap == null)
+                    return null;
+                return m_IndexDataMap.Values;
+            }
+        }
+
         public Dictionary<K, IndexFileData>.Enumerator GetIter() {
             if (m_IndexDataMap == null)
                 return new Dictionary<K, IndexFileData>.Enumerator();

@@ -41,7 +41,7 @@ namespace NsLib.Config
                 return;
 
             TestBuildConfigConvertMap();
-            ProcessConfigConvert(assetFileName, 100);
+            ProcessConfigConvert(assetFileName, 10);
         }
 
         private static bool IsContainConfigFiles(string[] importedAsset) {
