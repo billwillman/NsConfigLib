@@ -11,6 +11,9 @@ public class TestConfigVoMap : MonoBehaviour {
     private void OnReadEnd(IConfigVoMap<string> map) {
         float delta = Time.realtimeSinceStartup - m_StartTime;
         Debug.LogFormat("异步读取完成消耗：{0}", delta.ToString());
+
+        AndroidJavaClass testClass = new AndroidJavaClass("abc");
+        testClass.CallStatic("GSDKSaveFps", new object[] { "", -1, -1, -1, -1, -1, -1, -1, "-1" });
     }
 
     private static string _cJson = "TaskCfg";

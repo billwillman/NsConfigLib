@@ -92,35 +92,20 @@ public class TestListConfig: MonoBehaviour {
             {
                 m_Stream = new MemoryStream(m_Binary.bytes);
                 m_StartTime = Time.realtimeSinceStartup;
-                m_ThreadDone = false;
                 m_StartTime = Time.realtimeSinceStartup;
-                Loom.RunAsync(
-                    ()=> {
-                        m_ThreadDone = ConfigWrap.ToObjectListThreadAsyncc<string, TaskTalkCfg>(m_Stream,
-                            m_TaskDict, true, null);
-                    });
+                ConfigWrap.ToObjectListThreadAsync<string, TaskTalkCfg>(m_Stream,
+                            m_TaskDict, true, OnReadEnd);
 
-               
+
             }
 
         }
     }
 
-    private bool m_ThreadDone = false;
-
     private float m_StartTime = 0f;
     private void OnReadEnd(IDictionary map) {
         float delta = Time.realtimeSinceStartup - m_StartTime;
         Debug.LogFormat("异步读取完成消耗：{0}", delta.ToString());
-        m_ThreadDone = false;
-    }
-
-    private void Update() {
-        Loom.QueueOnMainThread(() => {
-            if (m_ThreadDone) {
-                OnReadEnd(null);
-            }
-        });
     }
 
 
