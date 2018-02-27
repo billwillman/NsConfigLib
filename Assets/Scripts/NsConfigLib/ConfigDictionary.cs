@@ -48,6 +48,21 @@ namespace NsLib.Config {
             return ret;
         }
 
+        public static void ThreadPreloadWrap<K, V>(Dictionary<K, V> maps, byte[] buffer,
+            Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
+            if (maps == null || buffer == null || buffer.Length <= 0) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
+            maps.Clear();
+
+            MemoryStream stream = new MemoryStream(buffer);
+
+            ConfigWrap.ToObjectThreadAsync<K, V>(stream, maps, true, onEnd, onProcess);
+        }
+
         public static void PreloadWrap<K, V>(Dictionary<K, V> maps, byte[] buffer,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
@@ -102,6 +117,23 @@ namespace NsLib.Config {
             PreloadWrap<K1, K2, V>(maps, asset.bytes, mono, onEnd, onProcess);
         }
 
+        public static void ThreadPreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
+            Action<IDictionary> onEnd,
+            Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
+
+            if (maps == null || buffer == null || buffer.Length <= 0) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
+            maps.Clear();
+
+            MemoryStream stream = new MemoryStream(buffer);
+
+            ConfigWrap.ToObjectMapThreadAsync<K1, K2, V>(stream, maps, true, onEnd, onProcess);
+        }
+
         public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
             MonoBehaviour mono, Action<IDictionary> onEnd,
             Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
@@ -126,6 +158,22 @@ namespace NsLib.Config {
                     onEnd(null);
                 }
             }
+        }
+
+        public static void ThreadPreloadWrap<K, V>(Dictionary<K, List<V>> maps, byte[] buffer,
+           Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
+
+            if (maps == null || buffer == null || buffer.Length <= 0) {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+
+            maps.Clear();
+
+            MemoryStream stream = new MemoryStream(buffer);
+
+            ConfigWrap.ToObjectListThreadAsync<K, V>(stream, maps, true, onEnd, onProcess);
         }
 
         public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, byte[] buffer,
@@ -203,7 +251,7 @@ namespace NsLib.Config {
 
             return ret;
         }
-
+        
     }
 
     public interface IConfigVoMap<K> {
@@ -380,6 +428,23 @@ namespace NsLib.Config {
             return true;
         }
 
+        public bool ThreadPreload(byte[] buffer,
+            Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
+            if (buffer == null)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K, V>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.ThreadPreloadWrap<K, V>(m_Map, buffer,
+                (IDictionary maps) => {
+                    IConfigVoMap<K> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                }, onProcess);
+            return true;
+        }
+
         public bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono, 
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
             if (buffer == null || mono == null)
@@ -420,6 +485,24 @@ namespace NsLib.Config {
                 value = null;
                 return false;
             }
+            return true;
+        }
+
+        public bool ThreadPreload(byte[] buffer,
+            Action<IConfigVoMap<K1>> onEnd, Action<float> onProcess) {
+
+            if (buffer == null || buffer.Length <= 0)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K1, Dictionary<K2, V>>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.ThreadPreloadWrap<K1, K2, V>(m_Map, buffer,
+                (IDictionary maps) => {
+                    IConfigVoMap<K1> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                }, onProcess);
             return true;
         }
 
@@ -711,6 +794,23 @@ namespace NsLib.Config {
                 return false;
             m_Map = ConfigDictionary.ToWrapList<K, V>(buffer, isLoadAll);
             return m_Map != null;
+        }
+
+        public bool ThreadPreload(byte[] buffer,
+            Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
+            if (buffer == null || buffer.Length <= 0)
+                return false;
+            if (m_Map == null)
+                m_Map = new Dictionary<K, List<V>>();
+            else
+                m_Map.Clear();
+            ConfigDictionary.ThreadPreloadWrap<K, V>(m_Map, buffer,
+                (IDictionary maps) => {
+                    IConfigVoMap<K> ret = maps != null ? this : null;
+                    if (onEnd != null)
+                        onEnd(ret);
+                }, onProcess);
+            return true;
         }
 
         public bool Preload(byte[] buffer, UnityEngine.MonoBehaviour mono, 
