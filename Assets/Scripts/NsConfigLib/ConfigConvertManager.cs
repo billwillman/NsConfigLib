@@ -126,6 +126,131 @@ namespace NsLib.Config {
             return ret;
         }
 
+        // 检查
+        private static void PrintCheckErrorPropertys(string str, System.Type tt) {
+            // 字段和Property的名字
+            List<string> fieldAndPropNamesNoConfigId = new List<string>();
+            System.Reflection.PropertyInfo[] props =
+                   tt.GetProperties(System.Reflection.BindingFlags.Public |
+                       System.Reflection.BindingFlags.Instance |
+                       System.Reflection.BindingFlags.SetProperty |
+                       System.Reflection.BindingFlags.GetProperty);
+
+            HashSet<uint> hasIdsMap = new HashSet<uint>();
+            if (props != null && props.Length > 0) {
+                for (int i = 0; i < props.Length; ++i) {
+                    var prop = props[i];
+                    object[] attrs = prop.GetCustomAttributes(false);
+                    bool isFound = false;
+                    if (attrs != null && attrs.Length > 0) {
+                        for (int j = 0; j < attrs.Length; ++j) {
+                            ConfigIdAttribute attr = attrs[j] as ConfigIdAttribute;
+                            if (attr != null) {
+                                if (hasIdsMap.Contains(attr.ID)) {
+                                    UnityEngine.Debug.LogErrorFormat("typeName: {0}=>attrId {1:D} has exists~~!!", tt.Name, attr.ID);
+                                } else
+                                    hasIdsMap.Add(attr.ID);
+                                isFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!isFound && prop.CanRead && prop.CanWrite) {
+                        fieldAndPropNamesNoConfigId.Add(prop.Name);
+                    }
+                }
+            }
+
+            FieldInfo[] fields = tt.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            if (fields != null && fields.Length > 0) {
+                for (int i = 0; i < fields.Length; ++i) {
+                    var field = fields[i];
+                    if (field == null)
+                        continue;
+                    fieldAndPropNamesNoConfigId.Add(field.Name);
+                }
+            }
+
+            if (fieldAndPropNamesNoConfigId.Count > 0) {
+                for (int i = 0; i < fieldAndPropNamesNoConfigId.Count; ++i) {
+                    string fieldName = fieldAndPropNamesNoConfigId[i];
+                    if (string.IsNullOrEmpty(fieldName))
+                        continue;
+                    if (str.IndexOf(fieldName) >= 0) {
+                        UnityEngine.Debug.LogErrorFormat("typeName: {0}=>【{1}】 is no ConfigId or no Property~~~~!!!!", tt.Name, fieldName);
+                    }
+                }
+            }
+
+            // 检查那些设置了ConfigId，但表里没有的，可以删除
+            fieldAndPropNamesNoConfigId.Clear();
+            if (props != null && props.Length > 0) {
+                for (int i = 0; i < props.Length; ++i) {
+                    var prop = props[i];
+                    object[] attrs = prop.GetCustomAttributes(false);
+                    bool isFound = false;
+                    if (attrs != null && attrs.Length > 0) {
+                        for (int j = 0; j < attrs.Length; ++j) {
+                            ConfigIdAttribute attr = attrs[j] as ConfigIdAttribute;
+                            if (attr != null) {
+                                isFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (isFound && prop.CanRead && prop.CanWrite) {
+                        fieldAndPropNamesNoConfigId.Add(prop.Name);
+                    }
+                }
+
+                if (fieldAndPropNamesNoConfigId.Count > 0) {
+                    for (int i = 0; i < fieldAndPropNamesNoConfigId.Count; ++i) {
+                        string fieldName = fieldAndPropNamesNoConfigId[i];
+                        if (string.IsNullOrEmpty(fieldName)) {
+                            if (str.IndexOf(fieldName) < 0) {
+                                UnityEngine.Debug.LogErrorFormat("typeName: {0}=>【{1}】 is can delete~~~~!!!!", tt.Name, fieldName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 检查定义错的耳机只能回VO文件类型
+        // Assets/Configs/Resources/Config/table/
+        public static void PrintCheckErrorPropertys(string rootPath) {
+            if (string.IsNullOrEmpty(rootPath))
+                return;
+            // 重新生成定义
+            BuildConfigConvert();
+            // 检查定义
+
+            if (rootPath[rootPath.Length - 1] != '/')
+                rootPath += "/";
+
+            var iter = m_ConvertClassMap.GetEnumerator();
+            while (iter.MoveNext()) {
+                string fileName = iter.Current.Value.configName;
+                // fileName = string.Format("Assets/Configs/Resources/Config/table/{0}.txt", fileName);
+                fileName = string.Format("{0}{1}.txt", rootPath, fileName);
+                if (File.Exists(fileName)) {
+                    FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+                    try {
+                        if (stream.Length > 0) {
+                            byte[] buf = new byte[stream.Length];
+                            stream.Read(buf, 0, buf.Length);
+                            string str = System.Text.Encoding.UTF8.GetString(buf);
+                            PrintCheckErrorPropertys(str, iter.Current.Value.type);
+                        }
+                    } finally {
+                        stream.Close();
+                        stream.Dispose();
+                    }
+                }
+            }
+            iter.Dispose();
+        }
+
 
         private static Dictionary<string, ConvertClassInfo> m_ConvertClassMap = new Dictionary<string, ConvertClassInfo>();
         private static Dictionary<string, ConvertClassInfo> m_TargetNameMap = new Dictionary<string, ConvertClassInfo>();
