@@ -12,7 +12,8 @@ namespace LitJson {
                 JsonReader reader = new JsonReader(json);
                 // 需要把LitJson库的这个方法改成public访问
                 return JsonMapper.ReadValue(type, reader);
-            } catch {
+            } catch (Exception e) {
+                UnityEngine.Debug.LogError(e.ToString());
                 return null;
             }
         }
