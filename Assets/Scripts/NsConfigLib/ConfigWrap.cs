@@ -1192,9 +1192,9 @@ namespace NsLib.Config {
                 int DictCnt = FilePathMgr.Instance.ReadInt(stream);
                 if (DictCnt > 0) {
                     if (maps == null)
-                        maps = new Dictionary<K1, Dictionary<K2, V>>();
+						maps = new Dictionary<K1, Dictionary<K2, V>>((int)header.Count);
 
-                    Dictionary<K2, V> subMap = new Dictionary<K2, V>();
+					Dictionary<K2, V> subMap = new Dictionary<K2, V>(DictCnt);
                     for (int j = 0; j < DictCnt; ++j) {
                         V config = new V();
                         config.stream = stream;
