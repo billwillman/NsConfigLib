@@ -96,7 +96,7 @@ namespace NsLib.Config {
         public static void PreloadWrap<K, V>(ref Dictionary<K, V> maps, TextAsset asset,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
-            if (maps == null || asset == null || mono == null) {
+            if (asset == null || mono == null) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -110,7 +110,7 @@ namespace NsLib.Config {
         public static void PreloadWrap<K1, K2, V>(ref Dictionary<K1, Dictionary<K2, V>> maps, TextAsset asset,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K2>, new() {
-            if (maps == null || asset == null || mono == null) {
+            if (asset == null || mono == null) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -213,7 +213,7 @@ namespace NsLib.Config {
         public static void PreloadWrap<K, V>(ref Dictionary<K, List<V>> maps, TextAsset asset,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
-            if (maps == null || asset == null || mono == null) {
+            if (asset == null || mono == null) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
