@@ -22,7 +22,125 @@ namespace NsLib.Config {
             cvNone = -1,
             cvObject = 0,
             cvList = 1,
-            cvMap = 2
+            cvMap = 2,
+            cvSingleType = 3
+        }
+
+        /// <summary>
+        /// 简单类型转换，例如：Dictionary<string, string>, 简单类型只支持全部读取和分步读取
+        /// </summary>
+        /// <typeparam name="K">简单类型</typeparam>
+        /// <typeparam name="V">简单类型</typeparam>
+        /// <param name="stream">流</param>
+        /// <param name="maps"></param>
+        /// <param name="loadAllCortine">异步节点接口</param>
+        /// <param name="onEnd">结束事件</param>
+        /// <param name="onProcess">处理事件</param>
+        /// <param name="maxAsynReadCnt">一次处理条目</param>
+        /// <returns>是否有错误</returns>
+        public static bool ToSingleVarType<K, V>(Stream stream, Dictionary<K, V> maps,
+            UnityEngine.MonoBehaviour loadAllCortine = null, Action<IDictionary> onEnd = null, Action<float> onProcess = null, int maxAsynReadCnt = 200)
+        {
+            if (maps == null || stream == null || stream.Length <= 0)
+            {
+                if (onEnd != null)
+                    onEnd(maps);
+                return false;
+            }
+            ConfigFileHeader header = new ConfigFileHeader();
+            if (!header.LoadFromStream(stream) || !header.IsVaild)
+            {
+                if (onEnd != null)
+                    onEnd(maps);
+                return false;
+            }
+            // 读取索引
+            stream.Seek(header.indexOffset, SeekOrigin.Begin);
+
+            ConfigValueType valueType = (ConfigValueType)stream.ReadByte();
+            if (valueType != ConfigValueType.cvSingleType)
+            {
+                if (onEnd != null)
+                    onEnd(maps);
+                return false;
+            }
+            if (header.Count <= 0)
+            {
+                if (onEnd != null)
+                    onEnd(maps);
+                return false;
+            }
+
+            StartLoadAllCortineOfSingleType(maps, header.Count, stream, loadAllCortine, onProcess, onEnd, maxAsynReadCnt);
+
+            return true;
+        }
+
+        private static IEnumerator StartLoadCortineOfSingleType<K, V>(Dictionary<K, V> maps, uint itemCount, Stream stream,
+            Action<float> onProcess, Action<IDictionary> onEnd, int maxAsyncReadCnt)
+        {
+            if (maps == null || itemCount == 0 || stream == null || stream.Length <= 0)
+                yield break;
+            int curCnt = 0;
+            int idx = 0;
+            for (int i = 0; i < itemCount; ++i)
+            {
+                K key = (K)FilePathMgr.Instance.ReadObject(stream, typeof(K));
+                V value = (V)FilePathMgr.Instance.ReadObject(stream, typeof(V));
+                maps[key] = value;
+                if (onProcess != null)
+                {
+                    ++idx;
+                    float process = 0.5f + (float)idx / (float)itemCount;
+                    onProcess(process);
+                }
+                ++curCnt;
+                if (curCnt >= maxAsyncReadCnt)
+                {
+                    curCnt = 0;
+                    InitEndFrame();
+                    yield return m_EndFrame;
+                }
+            }
+
+            stream.Close();
+            stream.Dispose();
+
+            if (onEnd != null)
+            {
+                onEnd(maps);
+            }
+
+        }
+
+        private static UnityEngine.Coroutine StartLoadAllCortineOfSingleType<K, V>(Dictionary<K, V> maps, uint itemCount, Stream stream, UnityEngine.MonoBehaviour parent,
+            Action<float> onProcess, Action<IDictionary> onEnd, int maxAsyncReadCnt)
+        {
+            if (maps == null || itemCount == 0 || stream == null || stream.Length <= 0)
+                return null;
+            if (parent != null)
+            {
+                parent.StartCoroutine(StartLoadCortineOfSingleType(maps, itemCount, stream, onProcess, onEnd, maxAsyncReadCnt));
+            }
+            else
+            {
+                for (int i = 0; i < itemCount; ++i)
+                {
+                    K key = (K)FilePathMgr.Instance.ReadObject(stream, typeof(K));
+                    V value = (V)FilePathMgr.Instance.ReadObject(stream, typeof(V));
+                    maps[key] = value;
+                }
+
+                stream.Close();
+                stream.Dispose();
+
+                if (onEnd != null)
+                {
+                    onEnd(maps);
+                }
+            }
+
+            return null;
         }
 
         public static Dictionary<K, V> ToObject<K, V>(byte[] buffer, bool isLoadAll = false) where V : ConfigBase<K>, new() {

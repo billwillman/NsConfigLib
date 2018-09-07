@@ -15,6 +15,33 @@ namespace NsLib.Config {
             return ToWrap<K, V>(asset.bytes, isLoadAll);
         }
 
+        public static Dictionary<K, V> ToWrapSingleType<K, V>(byte[] buffer)
+        {
+            if (buffer == null || buffer.Length <= 0)
+                return null;
+            MemoryStream stream = new MemoryStream(buffer);
+            Dictionary<K, V> ret = null;
+            ConfigWrap.InitDictMap(stream, ref ret);
+            ConfigWrap.ToSingleVarType<K, V>(stream, ret);
+            return ret;
+        }
+
+        public static void PreloadWrapOfSingleType<K, V>(ref Dictionary<K, V> maps, byte[] buffer, MonoBehaviour mono, Action<IDictionary> onEnd, Action<float> onProcess)
+        {
+            if (buffer == null || buffer.Length <= 0 || mono == null)
+            {
+                if (onEnd != null)
+                    onEnd(null);
+                return;
+            }
+            if (maps != null)
+                maps.Clear();
+            MemoryStream stream = new MemoryStream(buffer);
+            ConfigWrap.InitDictMap(stream, ref maps);
+            ConfigWrap.ToSingleVarType<K, V>(stream, maps, mono, onEnd, onProcess);
+        }
+
+
         #if UNITY_EDITOR
         // 因为List<T>里获得T类型有一个数组分配所以建议游戏运行时，不要用这个函数
         // 只用在测试中
