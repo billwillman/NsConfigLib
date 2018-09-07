@@ -1685,6 +1685,50 @@ namespace NsLib.Config {
             return true;
         }
 
+        // 是否是简单类型
+        private static bool IsSingleType(System.Object value)
+        {
+            if (value == null)
+                return false;
+            System.Type valueType = value.GetType();
+            bool ret = valueType == typeof(int) || valueType == typeof(uint) || valueType == typeof(short) || valueType == typeof(string) || valueType == typeof(ushort) ||
+                        valueType == typeof(double) || valueType == typeof(float) || valueType == typeof(byte) || valueType == typeof(char) || valueType == typeof(long) || valueType == typeof(ulong) ||
+                        valueType == typeof(sbyte) || valueType == typeof(bool);
+            return ret;
+        }
+
+        private static bool SimpleDataToStream(Stream stream, System.Collections.IDictionary values)
+        {
+            bool isSingleType = false;
+            var iter = values.GetEnumerator();
+            try
+            {
+                if (iter.MoveNext())
+                {
+                    isSingleType = IsSingleType(iter.Value);
+                }
+            }
+            finally
+            {
+                iter.DisposeIter();
+            }
+
+            if (isSingleType)
+            {
+                iter = values.GetEnumerator();
+                stream.WriteByte((byte)ConfigValueType.cvSingleType);
+                while (iter.MoveNext())
+                {
+                    FilePathMgr.Instance.WriteObject(stream, iter.Key, iter.Key.GetType());
+                    FilePathMgr.Instance.WriteObject(stream, iter.Value, iter.Value.GetType());
+                }
+                iter.DisposeIter();
+                return true;
+            }
+
+            return false;
+        }
+
         internal static bool ToStream(Stream stream, System.Collections.IDictionary values) {
             if (stream == null || values == null || values.Count <= 0)
                 return false;
@@ -1692,19 +1736,23 @@ namespace NsLib.Config {
             ConfigFileHeader header = new ConfigFileHeader((uint)values.Count, 0);
             header.SaveToStream(stream);
 
-            // 写入数据行
-            if (!DataToStream(stream, values))
-                return false;
-
-            var valueType = GetConfigValueType(values);
-            if (valueType == ConfigValueType.cvNone)
-                return false;
-
             long indexOffset = stream.Position;
-            stream.WriteByte((byte)valueType);
+            if (!SimpleDataToStream(stream, values))
+            {
+                // 写入数据行
+                if (!DataToStream(stream, values))
+                    return false;
 
-            // 写入索引数据
-            IndexToStream(stream, values, valueType);
+                var valueType = GetConfigValueType(values);
+                if (valueType == ConfigValueType.cvNone)
+                    return false;
+
+                indexOffset = stream.Position;
+                stream.WriteByte((byte)valueType);
+
+                // 写入索引数据
+                IndexToStream(stream, values, valueType);
+            }
 
             // 重写Header
             header.indexOffset = indexOffset;
