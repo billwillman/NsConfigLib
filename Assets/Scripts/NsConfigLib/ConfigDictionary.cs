@@ -50,7 +50,7 @@ namespace NsLib.Config {
 
         public static void ThreadPreloadWrap<K, V>(ref Dictionary<K, V> maps, byte[] buffer,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
-            if (maps == null || buffer == null || buffer.Length <= 0) {
+            if (buffer == null || buffer.Length <= 0) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -68,7 +68,7 @@ namespace NsLib.Config {
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
 
-            if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
+            if (buffer == null || buffer.Length <= 0 || mono == null) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -123,7 +123,7 @@ namespace NsLib.Config {
             Action<IDictionary> onEnd,
             Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
 
-            if (maps == null || buffer == null || buffer.Length <= 0) {
+            if (buffer == null || buffer.Length <= 0) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -140,7 +140,7 @@ namespace NsLib.Config {
         public static void PreloadWrap<K1, K2, V>(ref Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
             MonoBehaviour mono, Action<IDictionary> onEnd,
             Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
-            if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
+            if (buffer == null || buffer.Length <= 0 || mono == null) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -168,7 +168,7 @@ namespace NsLib.Config {
         public static void ThreadPreloadWrap<K, V>(ref Dictionary<K, List<V>> maps, byte[] buffer,
            Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
 
-            if (maps == null || buffer == null || buffer.Length <= 0) {
+            if (buffer == null || buffer.Length <= 0) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
@@ -186,7 +186,7 @@ namespace NsLib.Config {
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
 
-            if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
+            if (buffer == null || buffer.Length <= 0 || mono == null) {
                 if (onEnd != null)
                     onEnd(null);
                 return;
