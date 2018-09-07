@@ -16,8 +16,8 @@ public class TestConfigVoMap : MonoBehaviour {
         testClass.CallStatic("GSDKSaveFps", new object[] { "", -1, -1, -1, -1, -1, -1, -1, "-1" });
     }
 
-    private static string _cJson = "TaskCfg";
-    private static string _cBinary = "TaskCfg_Binary";
+    private static string _cJson = "TaskStepCfg";
+    private static string _cBinary = "TaskStepCfg_Binary";
 
     private void OnGUI() {
 
