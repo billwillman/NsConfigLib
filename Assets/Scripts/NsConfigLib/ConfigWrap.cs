@@ -525,7 +525,7 @@ namespace NsLib.Config {
             if (stream == null || maps == null) {
                 yield break;
             }
-            maps.Clear();
+           // maps.Clear();
             ConfigFileHeader header = new ConfigFileHeader();
             if (!header.LoadFromStream(stream) || !header.IsVaild) {
                 yield break;
@@ -1001,6 +1001,29 @@ namespace NsLib.Config {
         }
         */
 
+        public static bool InitDictMap<K, V>(Stream stream, ref Dictionary<K, V> maps)
+        {
+            if (stream == null || stream.Length <= 0)
+                return false;
+
+            long originPos = stream.Position;
+
+            try
+            {
+                ConfigFileHeader header = new ConfigFileHeader();
+                if (!header.LoadFromStream(stream) || !header.IsVaild)
+                    return false;
+
+                maps = new Dictionary<K, V>((int)header.Count);
+
+                return true;
+            }
+            finally
+            {
+                stream.Seek(originPos, SeekOrigin.Begin);
+            }
+        }
+
         public static UnityEngine.Coroutine ToObjectMapAsync<K1, K2, V>(Stream stream,
             Dictionary<K1, Dictionary<K2, V>> maps, UnityEngine.MonoBehaviour mono, bool isLoadAll = false,
             Action<IDictionary> onOK = null, Action<float> onProcess = null, int maxAsyncReadCnt = 500) where V : ConfigBase<K2>, new() {
@@ -1091,7 +1114,7 @@ namespace NsLib.Config {
                 yield break;
             }
 
-            maps.Clear();
+            //maps.Clear();
 
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);
@@ -1649,7 +1672,7 @@ namespace NsLib.Config {
             if (stream == null || maps == null) {
                 return;
             }
-            maps.Clear();
+           // maps.Clear();
             ConfigFileHeader header = new ConfigFileHeader();
             if (!header.LoadFromStream(stream) || !header.IsVaild) {
                 return;
@@ -1685,7 +1708,7 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+           // maps.Clear();
 
             ConfigFileHeader header = new ConfigFileHeader();
             if (!header.LoadFromStream(stream) || !header.IsVaild) {
@@ -1744,7 +1767,7 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+           // maps.Clear();
 
             // 读取索引
             stream.Seek(header.indexOffset, SeekOrigin.Begin);

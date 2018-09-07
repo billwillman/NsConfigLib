@@ -48,7 +48,7 @@ namespace NsLib.Config {
             return ret;
         }
 
-        public static void ThreadPreloadWrap<K, V>(Dictionary<K, V> maps, byte[] buffer,
+        public static void ThreadPreloadWrap<K, V>(ref Dictionary<K, V> maps, byte[] buffer,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
             if (maps == null || buffer == null || buffer.Length <= 0) {
                 if (onEnd != null)
@@ -56,14 +56,15 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+            if (maps != null)
+                maps.Clear();
 
             MemoryStream stream = new MemoryStream(buffer);
-
+            ConfigWrap.InitDictMap(stream, ref maps);
             ConfigWrap.ToObjectThreadAsync<K, V>(stream, maps, true, onEnd, onProcess);
         }
 
-        public static void PreloadWrap<K, V>(Dictionary<K, V> maps, byte[] buffer,
+        public static void PreloadWrap<K, V>(ref Dictionary<K, V> maps, byte[] buffer,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
 
@@ -73,11 +74,12 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+            if (maps != null)
+                maps.Clear();
 
             MemoryStream stream = new MemoryStream(buffer);
 
-
+            ConfigWrap.InitDictMap(stream, ref maps);
             Coroutine cor = ConfigWrap.ToObjectAsync<K, V>(stream, maps, mono, true, onEnd, onProcess);
             if (cor == null) {
                 stream.Close();
@@ -91,7 +93,7 @@ namespace NsLib.Config {
         }
 
         // 预加载用
-        public static void PreloadWrap<K, V>(Dictionary<K, V> maps, TextAsset asset,
+        public static void PreloadWrap<K, V>(ref Dictionary<K, V> maps, TextAsset asset,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K>, new() {
             if (maps == null || asset == null || mono == null) {
@@ -100,12 +102,12 @@ namespace NsLib.Config {
                 return;
             }
 
-            PreloadWrap<K, V>(maps, asset.bytes, mono, onEnd, onProcess);
+            PreloadWrap<K, V>(ref maps, asset.bytes, mono, onEnd, onProcess);
 
 
         }
 
-        public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, TextAsset asset,
+        public static void PreloadWrap<K1, K2, V>(ref Dictionary<K1, Dictionary<K2, V>> maps, TextAsset asset,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess) where V : ConfigBase<K2>, new() {
             if (maps == null || asset == null || mono == null) {
@@ -114,10 +116,10 @@ namespace NsLib.Config {
                 return;
             }
 
-            PreloadWrap<K1, K2, V>(maps, asset.bytes, mono, onEnd, onProcess);
+            PreloadWrap<K1, K2, V>(ref maps, asset.bytes, mono, onEnd, onProcess);
         }
 
-        public static void ThreadPreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
+        public static void ThreadPreloadWrap<K1, K2, V>(ref Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
             Action<IDictionary> onEnd,
             Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
 
@@ -127,14 +129,15 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+            if (maps != null)
+                maps.Clear();
 
             MemoryStream stream = new MemoryStream(buffer);
-
+            ConfigWrap.InitDictMap(stream, ref maps);
             ConfigWrap.ToObjectMapThreadAsync<K1, K2, V>(stream, maps, true, onEnd, onProcess);
         }
 
-        public static void PreloadWrap<K1, K2, V>(Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
+        public static void PreloadWrap<K1, K2, V>(ref Dictionary<K1, Dictionary<K2, V>> maps, byte[] buffer,
             MonoBehaviour mono, Action<IDictionary> onEnd,
             Action<float> onProcess = null) where V : ConfigBase<K2>, new() {
             if (maps == null || buffer == null || buffer.Length <= 0 || mono == null) {
@@ -143,10 +146,12 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+            if (maps != null)
+                maps.Clear();
 
             MemoryStream stream = new MemoryStream(buffer);
 
+            ConfigWrap.InitDictMap(stream, ref maps);
             Coroutine cor = ConfigWrap.ToObjectMapAsync<K1, K2, V>(stream,
                 maps, mono, true, onEnd, onProcess);
 
@@ -160,7 +165,7 @@ namespace NsLib.Config {
             }
         }
 
-        public static void ThreadPreloadWrap<K, V>(Dictionary<K, List<V>> maps, byte[] buffer,
+        public static void ThreadPreloadWrap<K, V>(ref Dictionary<K, List<V>> maps, byte[] buffer,
            Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
 
             if (maps == null || buffer == null || buffer.Length <= 0) {
@@ -169,14 +174,15 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+            if (maps != null)
+                maps.Clear();
 
             MemoryStream stream = new MemoryStream(buffer);
-
+            ConfigWrap.InitDictMap(stream, ref maps);
             ConfigWrap.ToObjectListThreadAsync<K, V>(stream, maps, true, onEnd, onProcess);
         }
 
-        public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, byte[] buffer,
+        public static void PreloadWrap<K, V>(ref Dictionary<K, List<V>> maps, byte[] buffer,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
 
@@ -186,11 +192,12 @@ namespace NsLib.Config {
                 return;
             }
 
-            maps.Clear();
+            if (maps != null)
+                maps.Clear();
 
             MemoryStream stream = new MemoryStream(buffer);
 
-
+            ConfigWrap.InitDictMap(stream, ref maps);
             Coroutine cor = ConfigWrap.ToObjectListAsync<K, V>(stream, maps, mono, true, onEnd, onProcess);
             if (cor == null) {
                 stream.Close();
@@ -203,7 +210,7 @@ namespace NsLib.Config {
 
         }
 
-        public static void PreloadWrap<K, V>(Dictionary<K, List<V>> maps, TextAsset asset,
+        public static void PreloadWrap<K, V>(ref Dictionary<K, List<V>> maps, TextAsset asset,
             MonoBehaviour mono,
             Action<IDictionary> onEnd, Action<float> onProcess = null) where V : ConfigBase<K>, new() {
             if (maps == null || asset == null || mono == null) {
@@ -212,7 +219,7 @@ namespace NsLib.Config {
                 return;
             }
 
-            PreloadWrap<K, V>(maps, asset.bytes, mono, onEnd, onProcess);
+            PreloadWrap<K, V>(ref maps, asset.bytes, mono, onEnd, onProcess);
         }
 
         public static Dictionary<K, List<V>> ToWrapList<K, V>(TextAsset asset,
@@ -415,11 +422,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess = null) {
             if (asset == null || mono == null)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K, V>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.PreloadWrap<K, V>(m_Map, asset, mono, 
+            ConfigDictionary.PreloadWrap<K, V>(ref m_Map, asset, mono, 
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -432,11 +435,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
             if (buffer == null)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K, V>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.ThreadPreloadWrap<K, V>(m_Map, buffer,
+            ConfigDictionary.ThreadPreloadWrap<K, V>(ref m_Map, buffer,
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -449,11 +448,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
             if (buffer == null || mono == null)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K, V>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.PreloadWrap<K, V>(m_Map, buffer, mono,
+            ConfigDictionary.PreloadWrap<K, V>(ref m_Map, buffer, mono,
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -493,11 +488,7 @@ namespace NsLib.Config {
 
             if (buffer == null || buffer.Length <= 0)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K1, Dictionary<K2, V>>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.ThreadPreloadWrap<K1, K2, V>(m_Map, buffer,
+            ConfigDictionary.ThreadPreloadWrap<K1, K2, V>(ref m_Map, buffer,
                 (IDictionary maps) => {
                     IConfigVoMap<K1> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -511,11 +502,7 @@ namespace NsLib.Config {
 
             if (buffer == null || mono == null || buffer.Length <= 0)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K1, Dictionary<K2, V>>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.PreloadWrap<K1, K2, V>(m_Map, buffer, mono,
+            ConfigDictionary.PreloadWrap<K1, K2, V>(ref m_Map, buffer, mono,
                 (IDictionary maps) => {
                     IConfigVoMap<K1> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -529,11 +516,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K1>> onEnd, Action<float> onProcess) {
             if (asset == null || mono == null)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K1, Dictionary<K2, V>>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.PreloadWrap<K1, K2, V>(m_Map, asset, mono,
+            ConfigDictionary.PreloadWrap<K1, K2, V>(ref m_Map, asset, mono,
                 (IDictionary maps) => {
                     IConfigVoMap<K1> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -800,11 +783,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
             if (buffer == null || buffer.Length <= 0)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K, List<V>>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.ThreadPreloadWrap<K, V>(m_Map, buffer,
+            ConfigDictionary.ThreadPreloadWrap<K, V>(ref m_Map, buffer,
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -817,11 +796,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
             if (buffer == null || mono == null || buffer.Length <= 0)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K, List<V>>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.PreloadWrap<K, V>(m_Map, buffer, mono,
+            ConfigDictionary.PreloadWrap<K, V>(ref m_Map, buffer, mono,
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
@@ -835,11 +810,7 @@ namespace NsLib.Config {
             Action<IConfigVoMap<K>> onEnd, Action<float> onProcess) {
             if (asset == null || mono == null)
                 return false;
-            if (m_Map == null)
-                m_Map = new Dictionary<K, List<V>>();
-            else
-                m_Map.Clear();
-            ConfigDictionary.PreloadWrap<K, V>(m_Map, asset, mono,
+            ConfigDictionary.PreloadWrap<K, V>(ref m_Map, asset, mono,
                 (IDictionary maps) => {
                     IConfigVoMap<K> ret = maps != null ? this : null;
                     if (onEnd != null)
