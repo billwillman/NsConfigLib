@@ -79,6 +79,17 @@ namespace NsLib.Config {
             }
         }
 
+        // 注册简易配置，例如：Dictionary<string, string >
+        public static void RegisterSimpleTypeConfig(string configName, System.Type dictionaryType, string convertName = "")
+        {
+            if (string.IsNullOrEmpty(configName))
+                return;
+            ConfigConvertAttribute attr = new ConfigConvertAttribute(configName, dictionaryType, convertName);
+            ConvertClassInfo ret = new ConvertClassInfo(typeof(string), attr);
+            m_ConvertClassMap[configName] = ret;
+            m_TargetNameMap[ret.convertName] = ret;
+        }
+
         // LitJson转换成自定义格式
         public static void ConvertToBinaryFile(string fileName, string configName, string json) {
 
