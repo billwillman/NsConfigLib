@@ -76,7 +76,12 @@ namespace ConvertExcel
                 ret = string.Format("\"{0}\"", value);
             }
             else
-                ret = value;
+            {
+                if (string.IsNullOrEmpty(value))
+                    ret = "0";
+                else
+                    ret = value;
+            }
             return ret;
         }
 
