@@ -153,9 +153,11 @@ namespace ConvertExcel
 
         private void WriteCsTableClass(Stream stream, string className, string[] varNames, string[] varDescs, string[] varTypes)
         {
-            //string classConvert = "  [ConfigConvert(\"{0}\", typeDictionary<>)]";
+            string classConvert = string.Format("  [ConfigConvert(\"{0}\", typeof(Dictionary<{1}, {0}>), \"{0}_Binary\")]\r\n", className, GetExcelTypeStr(varTypes[0]));
+            byte[] buf = System.Text.Encoding.UTF8.GetBytes(classConvert);
+            stream.Write(buf, 0, buf.Length);
             string classBegin = "  public class " + className +  "\r\n  {\r\n";
-            byte[] buf = System.Text.Encoding.UTF8.GetBytes(classBegin);
+            buf = System.Text.Encoding.UTF8.GetBytes(classBegin);
             stream.Write(buf, 0, buf.Length);
 
             for (int i = 0; i < varNames.Length; ++i)

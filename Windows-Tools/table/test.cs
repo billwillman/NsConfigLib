@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace NsLib.Config.Table 
 {
+  [ConfigConvert("test", typeof(Dictionary<int, test>), "test_Binary")]
   public class test
   {
     //物品ID
