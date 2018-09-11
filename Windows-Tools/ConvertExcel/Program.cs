@@ -22,16 +22,16 @@ namespace ConvertExcel
 
         static void Main(string[] args)
         {
-            Test();
-            return;
+           // Test();
+           // return;
 
-            if (args.Length <= 1)
+            if (args.Length <= 0)
             {
-                Console.WriteLine(string.Format("command paramCount {0} must > 1", args.Length));
+                Console.WriteLine(string.Format("command paramCount {0} must >= 1", args.Length));
                 Console.ReadLine();
                 return;
             }
-            string excelFileName = args[1];
+            string excelFileName = args[0];
             if (!File.Exists(excelFileName))
             {
                 Console.WriteLine(string.Format("Excel File {0} not found~!", excelFileName));
