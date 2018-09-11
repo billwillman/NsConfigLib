@@ -68,10 +68,124 @@ namespace ConvertExcel
             return true;
         }
 
+        private string GetJsonValue(string valueType, string value)
+        {
+            string ret;
+            if (string.Compare(valueType, "string") == 0)
+            {
+                ret = string.Format("\"{0}\"", value);
+            }
+            else
+                ret = value;
+            return ret;
+        }
+
+        private bool WriteSheetToJson(Stream stream, Microsoft.Office.Interop.Excel.Worksheet sheet)
+        {
+            string[] varNames, varTypes, varDescs;
+            GetVars(sheet, out varNames, out varDescs, out varTypes);
+
+            if (varNames.Length != varDescs.Length || varDescs.Length != varTypes.Length)
+                return false;
+            HashSet<int> columsHash = new HashSet<int>();
+            for (int i = 0; i < varNames.Length; ++i)
+            {
+                string name = varNames[i];
+                string type = varTypes[i];
+                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type))
+                {
+                    // KEY不允许为空
+                    if (i == 0)
+                        return false;
+                    continue;
+                }
+                columsHash.Add(i + 1);
+            }
+
+            if (columsHash.Count <= 0)
+                return false;
+
+            for (int r = 4; r <= sheet.UsedRange.Rows.Count; ++r)
+            {
+                var cell = sheet.Cells[r, 1];
+
+                if (cell == null || cell.Value2 == null)
+                    continue;
+
+                string value = cell.Value2.ToString();
+                if (string.IsNullOrEmpty(value))
+                    continue;
+                // KEY必須要有值
+                value = value.Trim();
+                if (string.IsNullOrEmpty(value))
+                    continue;
+                string valueType = GetExcelTypeStr(varTypes[0]);
+                string key = GetJsonValue(valueType, value);
+
+                string str = string.Format("  {0}:\r\n  {{\r\n", key);
+
+                byte[] buf = System.Text.Encoding.UTF8.GetBytes(str);
+                stream.Write(buf, 0, buf.Length);
+
+                for (int c = 1; c <= sheet.UsedRange.Columns.Count; ++c)
+                {
+                    if (!columsHash.Contains(c))
+                        continue;
+                    cell = sheet.Cells[r, c];
+                    if (cell == null || cell.Value2 == null)
+                        value = string.Empty;
+                    else
+                    {
+                        value = cell.Value2.ToString();
+                        if (string.IsNullOrEmpty(value))
+                            value = string.Empty;
+                        else
+                        {
+                            value = value.Trim();
+                            if (string.IsNullOrEmpty(value))
+                                value = string.Empty;
+                        }
+                    }
+                    valueType = GetExcelTypeStr(varTypes[c - 1]);
+                    string item = string.Format("    \"{0}\": {1}\r\n", varNames[c - 1], GetJsonValue(valueType, value));
+                    buf = System.Text.Encoding.UTF8.GetBytes(item);
+                    stream.Write(buf, 0, buf.Length);
+                }
+
+                string endStr;
+                bool isEnd = r == sheet.UsedRange.Rows.Count;
+                if (isEnd)
+                    endStr = "  }\r\n";
+                else
+                    endStr = "  },\r\n";
+
+                buf = System.Text.Encoding.UTF8.GetBytes(endStr);
+                stream.Write(buf, 0, buf.Length);
+                stream.Flush();
+            }
+
+            stream.Flush();
+            return true;
+        }
+
         // 表第一个字段为KEY
         private bool ConvertSheetToJson(Microsoft.Office.Interop.Excel.Worksheet sheet, string exportDir)
         {
-           
+            string tableName = sheet.Name;
+            string fileName = string.Format("{0}/{1}.txt", exportDir, sheet.Name);
+            FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+            try
+            {
+                byte[] buf = System.Text.Encoding.UTF8.GetBytes("{\r\n");
+                stream.Write(buf, 0, buf.Length);
+                WriteSheetToJson(stream, sheet);
+                buf = System.Text.Encoding.UTF8.GetBytes("}\r\n");
+                stream.Write(buf, 0, buf.Length);
+            } finally
+            {
+                stream.Close();
+                stream.Dispose();
+            }
             return true;
         }
 
@@ -178,10 +292,10 @@ namespace ConvertExcel
             stream.Flush();
         }
 
-        private bool ConvertSheetToCs(Microsoft.Office.Interop.Excel.Worksheet sheet, string exportDir)
+        private void GetVars(Microsoft.Office.Interop.Excel.Worksheet sheet, out string[] varNames, out string[] varDescs, out string[] varTypes)
         {
             int colNum = sheet.UsedRange.Columns.Count;
-            string[] varNames = new string[colNum];
+            varNames = new string[colNum];
             for (int i = 1; i <= colNum; ++i)
             {
                 var cell = sheet.Cells[1, i];
@@ -189,19 +303,25 @@ namespace ConvertExcel
                 varNames[i - 1] = cell.Value2.ToString();
             }
 
-            string[] varDescs = new string[colNum];
+            varDescs = new string[colNum];
             for (int i = 1; i <= colNum; ++i)
             {
                 var cell = sheet.Cells[2, i];
                 varDescs[i - 1] = cell.Value2.ToString();
             }
 
-            string[] varTypes = new string[colNum];
+            varTypes = new string[colNum];
             for (int i = 1; i <= colNum; ++i)
             {
                 var cell = sheet.Cells[3, i];
                 varTypes[i - 1] = cell.Value2.ToString();
             }
+        }
+
+        private bool ConvertSheetToCs(Microsoft.Office.Interop.Excel.Worksheet sheet, string exportDir)
+        {
+            string[] varNames, varTypes, varDescs;
+            GetVars(sheet, out varNames, out varDescs, out varTypes);
 
             if (varNames.Length != varDescs.Length || varDescs.Length != varTypes.Length)
                 return false;
