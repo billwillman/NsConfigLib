@@ -53,7 +53,7 @@ namespace ConvertExcel
             
             sheet.Activate();
 
-            if (sheet.Cells == null || string.IsNullOrEmpty(exportDir) || sheet.UsedRange.Rows.Count < 3 || sheet.UsedRange.Columns.Count <= 0)
+            if (sheet.Cells == null || string.IsNullOrEmpty(exportDir) || sheet.UsedRange  == null || sheet.UsedRange.Rows.Count < 3 || sheet.UsedRange.Columns.Count <= 0)
                 return false;
            
             // 转换
