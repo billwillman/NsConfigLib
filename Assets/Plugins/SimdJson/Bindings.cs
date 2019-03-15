@@ -233,7 +233,15 @@ namespace SimdJsonSharp
 
         public string GetUtf16String() 
 		{
+			#if NET_STANDARD_2_0
 			return _utf8Encoding.GetString((byte*)iterator_get_string(Handle), (int)iterator_get_string_length(Handle));
+			#else
+			int len = (int)iterator_get_string_length(Handle);
+			IntPtr srcPtr = (IntPtr)iterator_get_string(Handle);
+			byte[] temp = new byte[len];
+			Marshal.Copy(srcPtr, temp, 0, len);
+			return _utf8Encoding.GetString(temp);
+			#endif
 		}
 
         public double GetDouble() 
